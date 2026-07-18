@@ -30,7 +30,7 @@ When MediaElch releases a new version:
 
 ```bash
 git fetch upstream
-git rebase upstream/main
+git rebase upstream/master
 ```
 
 Resolve any conflicts (likely only in the integration-point files below), then:
