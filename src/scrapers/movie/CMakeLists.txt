@@ -1,6 +1,7 @@
 add_subdirectory(adultdvdempire)
 add_subdirectory(aebn)
 add_subdirectory(hotmovies)
+add_subdirectory(iafd)
 add_subdirectory(imdb)
 add_subdirectory(omdb)
 add_subdirectory(tmdb)

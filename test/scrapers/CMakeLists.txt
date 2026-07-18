@@ -15,6 +15,7 @@ add_executable(
   testAdultDvdEmpire.cpp
   testAEBN.cpp
   testHotMovies.cpp
+  testIafdMovie.cpp
   testImdbMovie.cpp
   testOmdbMovie.cpp
   testOmdbTv.cpp

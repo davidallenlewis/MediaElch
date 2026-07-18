@@ -1,0 +1,38 @@
+#pragma once
+
+#include "network/NetworkManager.h"
+#include "scrapers/movie/MovieScraper.h"
+#include "scrapers/movie/iafd/IafdMovieApi.h"
+
+#include <QObject>
+
+namespace mediaelch {
+namespace scraper {
+
+class IafdMovie : public MovieScraper
+{
+    Q_OBJECT
+
+public:
+    explicit IafdMovie(QObject* parent = nullptr);
+    static const char* const ID;
+
+    const ScraperMeta& meta() const override;
+
+    void initialize() override;
+    bool isInitialized() const override;
+
+    ELCH_NODISCARD MovieSearchJob* search(MovieSearchJob::Config config) override;
+    ELCH_NODISCARD MovieScrapeJob* loadMovie(MovieScrapeJob::Config config) override;
+
+    QSet<MovieScraperInfo> scraperNativelySupports() override;
+
+    void changeLanguage(mediaelch::Locale locale) override;
+
+private:
+    ScraperMeta m_meta;
+    IafdMovieApi m_api;
+};
+
+} // namespace scraper
+} // namespace mediaelch

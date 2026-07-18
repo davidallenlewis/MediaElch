@@ -20,6 +20,7 @@
 #include "scrapers/movie/custom/CustomMovieScraper.h"
 #include "scrapers/movie/custom/CustomMovieScraperConfiguration.h"
 #include "scrapers/movie/hotmovies/HotMovies.h"
+#include "scrapers/movie/iafd/IafdMovie.h"
 #include "scrapers/movie/imdb/ImdbMovie.h"
 #include "scrapers/movie/imdb/ImdbMovieConfiguration.h"
 #include "scrapers/movie/omdb/OmdbMovie.h"
@@ -259,6 +260,15 @@ void ScraperManager::initMovieScrapers()
         ade.m_config = std::move(config);
 
         m_scraperMovies.push_back(std::move(ade));
+    }
+    {
+        ManagedMovieScraper iafd;
+        auto config = std::make_unique<ScraperConfigurationStub>(IafdMovie::ID, m_settings);
+        config->init();
+        iafd.m_scraper = std::make_unique<IafdMovie>(nullptr);
+        iafd.m_config = std::move(config);
+
+        m_scraperMovies.push_back(std::move(iafd));
     }
     {
         ManagedMovieScraper aebn;

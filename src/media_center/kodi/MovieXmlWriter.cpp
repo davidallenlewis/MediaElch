@@ -120,6 +120,7 @@ QByteArray MovieXmlWriterGeneric::getMovieXml(bool testMode)
         writers << credit.trimmed();
     }
     KodiXml::writeStringsAsOneTagEach(xml, "credits", writers);
+    KodiXml::writeStringsAsOneTagEach(xml, "writer", writers);
 
     QStringList directors;
     const auto& directorsWithWhiteSpace = m_movie.director().split(",");

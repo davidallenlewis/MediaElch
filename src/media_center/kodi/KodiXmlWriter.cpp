@@ -4,6 +4,7 @@
 #include "data/Rating.h"
 
 #include <QDateTime>
+#include <algorithm>
 
 namespace mediaelch {
 namespace kodi {
@@ -41,14 +42,28 @@ void KodiXmlWriter::setWriteThumbUrlsToNfo(bool writeThumbUrlsToNfo)
 
 void KodiXmlWriter::writeActors(QXmlStreamWriter& xml, const Actors& actors) const
 {
-    for (const Actor* actor : actors) {
+    QVector<const Actor*> sorted = actors.actors();
+    std::sort(sorted.begin(), sorted.end(), [](const Actor* a, const Actor* b) {
+        const bool aHasThumb = !a->thumb.isEmpty();
+        const bool bHasThumb = !b->thumb.isEmpty();
+        if (aHasThumb != bHasThumb) {
+            return aHasThumb; // actors with thumbs first
+        }
+        return a->name.compare(b->name, Qt::CaseInsensitive) < 0;
+    });
+
+    for (const Actor* actor : sorted) {
         xml.writeStartElement("actor");
 
         xml.writeTextElement("name", actor->name);
-        xml.writeTextElement("role", actor->role);
-        xml.writeTextElement("order", QString::number(actor->order));
+        if (!actor->creditedAs.isEmpty()) {
+            xml.writeTextElement("credited", actor->creditedAs);
+        }
+        if (!actor->role.isEmpty()) {
+            xml.writeTextElement("role", actor->role);
+        }
 
-        if (writeThumbUrlsToNfo() && !actor->thumb.isEmpty()) {
+        if (writeThumbUrlsToNfo()) {
             xml.writeTextElement("thumb", actor->thumb);
         }
 

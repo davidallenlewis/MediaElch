@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>src/ui/light.css</file>
         <file>src/ui/dark.css</file>
+        <file>src/scrapers/movie/iafd/IafdExcludeActors.txt</file>
     </qresource>
 </RCC>

@@ -1,0 +1,30 @@
+#pragma once
+
+#include "scrapers/movie/MovieSearchJob.h"
+#include "scrapers/movie/iafd/IafdMovieApi.h"
+
+#include <QVector>
+
+namespace mediaelch {
+namespace scraper {
+
+class IafdMovieSearchJob final : public MovieSearchJob
+{
+    Q_OBJECT
+
+public:
+    explicit IafdMovieSearchJob(IafdMovieApi& api, MovieSearchJob::Config config, QObject* parent = nullptr);
+    ~IafdMovieSearchJob() override = default;
+
+    void doStart() override;
+
+private:
+    bool isDuckDuckGoChallengeResponse(const QString& html);
+    void parseSearch(const QString& html);
+
+private:
+    IafdMovieApi& m_api;
+};
+
+} // namespace scraper
+} // namespace mediaelch

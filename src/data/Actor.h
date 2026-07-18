@@ -12,6 +12,7 @@ struct Actor
 {
     QString name;
     QString role;
+    QString creditedAs; // alternate name used in this specific title
     QString thumb;
     QByteArray image;
     QString id;
