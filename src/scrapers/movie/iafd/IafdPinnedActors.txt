@@ -1,0 +1,7 @@
+# Pinned actors — one name per line.
+# Actors listed here will always appear first in the cast list,
+# ensuring they are within Infuse's 15-actor display limit.
+# Lines starting with # are ignored.
+Teri Starr
+Gen Padova
+Simone West

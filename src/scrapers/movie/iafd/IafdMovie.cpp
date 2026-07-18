@@ -39,7 +39,7 @@ const MovieScraper::ScraperMeta& IafdMovie::meta() const
 
 void IafdMovie::initialize()
 {
-    // IAFD requires no initialization.
+    seedActorListConfigFiles();
 }
 
 bool IafdMovie::isInitialized() const

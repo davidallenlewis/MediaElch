@@ -6,6 +6,10 @@
 namespace mediaelch {
 namespace scraper {
 
+/// Ensures the user-editable IAFD actor list config files exist on disk,
+/// seeding them from the embedded resources if necessary.
+void seedActorListConfigFiles();
+
 class IafdMovieScrapeJob final : public MovieScrapeJob
 {
     Q_OBJECT

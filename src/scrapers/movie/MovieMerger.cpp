@@ -89,24 +89,12 @@ void copyDetailToMovie(Movie& target,
         break;
     }
     case MovieScraperInfo::Actors: {
-        // Simple brute-force merge.
-        // \todo This code can most likely be simplified
+        // Replace all actors with the scraped ones.
+        target.setActors({});
         const auto& sourceActors = source.actors();
-        const auto& targetActors = target.actors();
         for (const Actor* sourceActor : sourceActors) {
-            bool hasActor = false;
-            for (Actor* targetActor : targetActors) {
-                if (targetActor->name == sourceActor->name) {
-                    targetActor->thumb = sourceActor->thumb;
-                    hasActor = true;
-                    break;
-                }
-            }
-            if (!hasActor) {
-                target.addActor(*sourceActor);
-            }
+            target.addActor(*sourceActor);
         }
-
         break;
     }
     case MovieScraperInfo::Genres: {

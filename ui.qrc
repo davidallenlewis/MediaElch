@@ -3,5 +3,6 @@
         <file>src/ui/light.css</file>
         <file>src/ui/dark.css</file>
         <file>src/scrapers/movie/iafd/IafdExcludeActors.txt</file>
+        <file>src/scrapers/movie/iafd/IafdPinnedActors.txt</file>
     </qresource>
 </RCC>

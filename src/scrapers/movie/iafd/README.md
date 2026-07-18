@@ -11,7 +11,8 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 - Full cast with headshots and role descriptions
 - `(Credited: Name)` aliases extracted into a custom `<credited>` NFO tag
 - 773-actor exclusion list (male performers) to keep cast lists focused on female performers
-- Actors sorted: thumbed (alpha) first, then unthumbed (alpha)
+- Actors sorted: pinned (alpha) first, then thumbed (alpha), then unthumbed (alpha)
+- Actor exclusion and pinned lists are live config files — editable without recompiling
 - Cloudflare detection with clear error messages
 
 ## Maintaining this fork
@@ -46,11 +47,11 @@ These are the only files modified compared to upstream MediaElch:
 | File | Change |
 |------|--------|
 | `src/data/Actor.h` | Added `creditedAs` field |
-| `src/media_center/kodi/KodiXmlWriter.cpp` | Actor sort order, `<credited>` tag, `<thumb>` always written |
+| `src/media_center/kodi/KodiXmlWriter.cpp` | Actor sort order (pinned → thumbed → unthumbed), `<credited>` tag, `<thumb>` always written |
 | `src/media_center/kodi/MovieXmlWriter.cpp` | Writes `<writer>` tag alongside `<credits>` |
 | `CMakeLists.txt` (iafd subfolder) | Build integration |
 | `ScraperManager.cpp` | Scraper registration |
-| `ui.qrc` | Exclusion list resource |
+| `ui.qrc` | Exclusion and pinned actor list resources (seed files only) |
 
 These are small, isolated changes. Rebase conflicts here will be infrequent and trivial to resolve.
 
@@ -69,3 +70,39 @@ Quick rebuild after changes:
 ```
 
 > **Note:** Changing `Actor.h` triggers a full recompile of most of the codebase — this takes several minutes. Changes only inside `src/scrapers/movie/iafd/` rebuild in seconds.
+
+## Actor list config files
+
+Two plain-text config files control which actors are excluded and which are pinned to the top of the cast list:
+
+| File | Purpose |
+|------|---------|
+| `IafdExcludeActors.txt` | Actors never added to the cast (773 male performers by default) |
+| `IafdPinnedActors.txt` | Actors always sorted first — useful since Infuse only shows the first 15 |
+
+One name per line. Lines starting with `#` are ignored.
+
+Both lists are **reloaded from disk on every scrape** — no rebuild or restart needed after editing.
+
+### Where the app reads them
+
+```
+~/Library/Application Support/kvibes/MediaElch/iafd/IafdExcludeActors.txt
+~/Library/Application Support/kvibes/MediaElch/iafd/IafdPinnedActors.txt
+```
+
+The app seeds these files from the embedded resources the first time it launches. After that, only the files on disk are used.
+
+### Keeping them in sync with the repo (recommended)
+
+Replace the seeded copies with symlinks back to the source files so there is only one canonical file — version-tracked in git, but editable in any text editor without recompiling:
+
+```bash
+ln -sf "$(pwd)/src/scrapers/movie/iafd/IafdPinnedActors.txt" \
+  ~/Library/Application\ Support/kvibes/MediaElch/iafd/IafdPinnedActors.txt
+
+ln -sf "$(pwd)/src/scrapers/movie/iafd/IafdExcludeActors.txt" \
+  ~/Library/Application\ Support/kvibes/MediaElch/iafd/IafdExcludeActors.txt
+```
+
+Run these commands once from the repo root. If you wipe `~/Library` (e.g. clean macOS reinstall), re-run them to restore the symlinks.

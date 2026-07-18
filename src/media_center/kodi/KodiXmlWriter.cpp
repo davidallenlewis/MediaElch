@@ -44,6 +44,10 @@ void KodiXmlWriter::writeActors(QXmlStreamWriter& xml, const Actors& actors) con
 {
     QVector<const Actor*> sorted = actors.actors();
     std::sort(sorted.begin(), sorted.end(), [](const Actor* a, const Actor* b) {
+        // Pinned actors (order < 0) sort before all others.
+        if (a->order != b->order) {
+            return a->order < b->order;
+        }
         const bool aHasThumb = !a->thumb.isEmpty();
         const bool bHasThumb = !b->thumb.isEmpty();
         if (aHasThumb != bHasThumb) {

@@ -3,9 +3,11 @@
 #include "data/movie/Movie.h"
 
 #include <QDate>
+#include <QDir>
 #include <QFile>
 #include <QRegularExpression>
 #include <QSet>
+#include <QStandardPaths>
 #include <QTextDocumentFragment>
 #include <QTextStream>
 #include <chrono>
@@ -13,23 +15,64 @@
 namespace mediaelch {
 namespace scraper {
 
-static const QSet<QString>& excludedActors()
+/// Returns the path to the user-editable config file, seeding it from the
+/// embedded resource the first time it is called.
+static QString actorListConfigPath(const QString& filename, const QString& resourcePath)
 {
-    static QSet<QString> s_excluded = []() {
-        QSet<QString> names;
-        QFile f(QStringLiteral(":/src/scrapers/movie/iafd/IafdExcludeActors.txt"));
-        if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            QTextStream in(&f);
-            while (!in.atEnd()) {
-                const QString line = in.readLine().trimmed();
-                if (!line.isEmpty()) {
-                    names.insert(line);
-                }
+    const QString dir =
+        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+        + QStringLiteral("/iafd");
+    QDir{}.mkpath(dir);
+    const QString path = dir + QLatin1Char('/') + filename;
+    if (!QFile::exists(path)) {
+        // Seed from embedded resource on first run.
+        QFile src(resourcePath);
+        if (src.open(QIODevice::ReadOnly)) {
+            QFile dst(path);
+            if (dst.open(QIODevice::WriteOnly)) {
+                dst.write(src.readAll());
             }
         }
-        return names;
-    }();
-    return s_excluded;
+    }
+    return path;
+}
+
+void seedActorListConfigFiles()
+{
+    actorListConfigPath(QStringLiteral("IafdExcludeActors.txt"),
+        QStringLiteral(":/src/scrapers/movie/iafd/IafdExcludeActors.txt"));
+    actorListConfigPath(QStringLiteral("IafdPinnedActors.txt"),
+        QStringLiteral(":/src/scrapers/movie/iafd/IafdPinnedActors.txt"));
+}
+
+static QSet<QString> loadActorList(const QString& filePath)
+{
+    QSet<QString> names;
+    QFile f(filePath);
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&f);
+        while (!in.atEnd()) {
+            const QString line = in.readLine().trimmed();
+            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#'))) {
+                names.insert(line);
+            }
+        }
+    }
+    return names;
+}
+
+static QSet<QString> excludedActors()
+{
+    static const QString path = actorListConfigPath(QStringLiteral("IafdExcludeActors.txt"),
+        QStringLiteral(":/src/scrapers/movie/iafd/IafdExcludeActors.txt"));
+    return loadActorList(path);
+}
+
+static QSet<QString> pinnedActors()
+{
+    static const QString path = actorListConfigPath(QStringLiteral("IafdPinnedActors.txt"),
+        QStringLiteral(":/src/scrapers/movie/iafd/IafdPinnedActors.txt"));
+    return loadActorList(path);
 }
 
 IafdMovieScrapeJob::IafdMovieScrapeJob(IafdMovieApi& api, MovieScrapeJob::Config config, QObject* parent) :
@@ -143,6 +186,11 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
     static const QRegularExpression stripTagsRx(QStringLiteral("<[^>]*>"));
     static const QRegularExpression collapseSpaceRx(QStringLiteral("\\s+"));
 
+    // Load both lists fresh from disk once per scrape so edits take effect
+    // without restarting the app.
+    const QSet<QString> excluded = excludedActors();
+    const QSet<QString> pinned = pinnedActors();
+
     QRegularExpressionMatchIterator castboxIt = castboxRx.globalMatch(html);
     while (castboxIt.hasNext()) {
         const QString boxContent = castboxIt.next().captured(1);
@@ -157,7 +205,7 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
         if (name.isEmpty()) {
             continue;
         }
-        if (excludedActors().contains(name)) {
+        if (excluded.contains(name)) {
             continue;
         }
 
@@ -189,6 +237,8 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
         if (!afterAnchor.isEmpty()) {
             actor.role = afterAnchor;
         }
+
+        actor.order = pinned.contains(name) ? -1 : 0;
 
         m_movie->addActor(actor);
     }
