@@ -3,6 +3,8 @@
 #include "data/movie/Movie.h"
 #include "log/Log.h"
 
+#include <QRegularExpression>
+
 namespace mediaelch {
 namespace scraper {
 
@@ -89,11 +91,70 @@ void copyDetailToMovie(Movie& target,
         break;
     }
     case MovieScraperInfo::Actors: {
-        // Replace all actors with the scraped ones.
+        // Preserve any manually-disambiguated actors (e.g. "Heidi (2)") before
+        // replacing with scraped actors.  These entries are user edits added to
+        // resolve name collisions in Infuse and must survive a re-scrape.
+        //
+        // Merge rule: if a scraped actor's name matches the base name of a
+        // preserved actor (strip the " (N)" suffix), substitute the
+        // disambiguated name so Infuse sees "Heidi (2)" instead of a plain
+        // "Heidi" duplicate.  The "(N)" suffix is itself proof of intentional
+        // user disambiguation, so a base-name match alone is sufficient.
+        static const QRegularExpression disambigRx(QStringLiteral(R"(\s*\(\d+\)\s*$)"));
+
+        struct PreservedActor {
+            Actor actor;
+            QString baseName; // name with the " (N)" suffix stripped
+            bool merged = false;
+        };
+        QVector<PreservedActor> preserved;
+        for (const Actor* a : target.actors()) {
+            if (disambigRx.match(a->name).hasMatch()) {
+                QString base = a->name;
+                base.remove(disambigRx);
+                preserved.append({*a, base.trimmed(), false});
+            }
+        }
+
+        // Index preserved actors by their base name for fast lookup.
+        QMap<QString, QVector<int>> byBaseName;
+        for (int i = 0; i < preserved.size(); ++i) {
+            byBaseName[preserved[i].baseName].append(i);
+        }
+
         target.setActors({});
         const auto& sourceActors = source.actors();
         for (const Actor* sourceActor : sourceActors) {
-            target.addActor(*sourceActor);
+            bool substituted = false;
+            if (byBaseName.contains(sourceActor->name)) {
+                // The presence of "(N)" is an intentional user disambiguation,
+                // so a base-name match alone is sufficient to merge.
+                for (int idx : byBaseName[sourceActor->name]) {
+                    PreservedActor& p = preserved[idx];
+                    if (!p.merged) {
+                        Actor merged = *sourceActor;
+                        merged.name = p.actor.name;
+                        target.addActor(merged);
+                        p.merged = true;
+                        substituted = true;
+                        break;
+                    }
+                }
+            }
+            if (!substituted) {
+                target.addActor(*sourceActor);
+            }
+        }
+
+        // Re-add any preserved actors that weren't merged into a scraped entry.
+        QSet<QString> addedNames;
+        for (const Actor* a : target.actors()) {
+            addedNames.insert(a->name);
+        }
+        for (const PreservedActor& p : preserved) {
+            if (!p.merged && !addedNames.contains(p.actor.name)) {
+                target.addActor(p.actor);
+            }
         }
         break;
     }
