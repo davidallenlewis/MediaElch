@@ -17,7 +17,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 
 ## Scraping behaviour
 
-| Field | NFO tag | IAFD behaviour | Fallback if IAFD has no data |
+| Field | NFO tag | IAFD behaviour | When IAFD has no data |
 |---|---|---|---|
 | Title | `<title>` | Always overwrites | IAFD always has a Title |
 | Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | Existing NFO value kept |
