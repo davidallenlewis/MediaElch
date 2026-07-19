@@ -23,7 +23,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | ID | `<id>` | IAFD movie URL | IAFD always has `URL` |
 | Runtime | `<runtime>` | Overwrites if IAFD `Minutes` is greater than 0 | NFO value kept |
 | Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | NFO value kept |
-| Studios | `<studio>` | Adds IAFD `Studio` | NFO value kept |
+| Studio | `<studio>` | Adds IAFD `Studio` | NFO value kept |
 | Writer | `<writer>` | Set to IAFD `Studio` (for Infuse studio browsing) | NFO value kept |
 | Genres | `<genre>` | Adds `Compilation` when IAFD `Compilation` is `Yes` | NFO value kept |
 | Released | `<premiered>` `<year>` | Overwrites if IAFD `Release Date` exists | NFO value kept |
