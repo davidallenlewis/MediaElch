@@ -19,7 +19,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 
 | Field | NFO tag | IAFD behaviour | When IAFD has no data |
 |---|---|---|---|
-| Title | `<title>` | Always overwrites | N/A (IAFD always has `Title`) |
+| Title | `<title>` | Always overwrites | `Title` always exists |
 | Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | Existing NFO value kept |
 | Released | `<premiered>` `<year>` | Overwrites if IAFD `Release Date` exists | Existing NFO value kept |
 | Runtime | `<runtime>` | Overwrites if IAFD `Minutes` is greater than 0 | Existing NFO value kept |
@@ -27,9 +27,9 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Scenes | `<plot>` | Overwrites with IAFD `Scene Breakdown` | Existing NFO value kept |
 | Genres | `<genre>` | Adds `Compilation` when IAFD `Compilation` is `Yes` | Existing NFO genres kept |
 | Studios | `<studio>` | Adds IAFD `Studio` | Existing NFO studios kept |
-| Actors | `<actor>` | •Fully replaces all existing Actors w/ IAFD `Performers`<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors are kept (image may be added)<br>•Male Actors are removed | N/A (IAFD always has `Performers`) |
-| Writer | `<writer>` | Set to IAFD studio (for Infuse studio browsing) | ⚠️ Existing NFO value wiped |
-| ID | `<id>` | IAFD movie URL | N/A (IAFD always has URL at bottom) |
+| Actors | `<actor>` | •Fully replaces all existing Actors w/ IAFD `Performers`<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors kept (image may be added)<br>•Male Actors are removed | `Performers` always exists |
+| Writer | `<writer>` | Set to IAFD `Studio` (for Infuse studio browsing) ⚠️ Existing NFO value wiped | `Studio` always exists |
+| ID | `<id>` | IAFD movie URL | URL always exists (at bottom) |
 
 ## Maintaining this fork
 
