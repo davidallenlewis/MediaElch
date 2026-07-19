@@ -20,13 +20,13 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Field | NFO tag | IAFD behaviour | If IAFD has no data |
 |---|---|---|---|
 | Title | `<title>` | Always overwrites | IAFD always has it |
-| Director | `<director>` | Overwrites; supports multiple directors | Existing value preserved |
-| Released | `<premiered>` `<year>` | Overwrites if valid date | Existing value preserved |
-| Runtime | `<runtime>` | Overwrites if > 0 | Existing value preserved |
-| Synopsis | `<outline>` | Overwrites with IAFD synopsis | Existing value preserved |
-| Scene breakdown | `<plot>` | Overwrites with scene-by-scene breakdown | Existing value preserved |
-| Genres | `<genre>` | Additive — adds `Compilation` when applicable | Existing genres untouched |
-| Studios | `<studio>` | Additive — adds IAFD studio | Existing studios untouched |
+| Director | `<director>` | Overwrites; supports multiple directors | Existing NFO value preserved |
+| Released | `<premiered>` `<year>` | Overwrites if valid date | Existing NFO value preserved |
+| Runtime | `<runtime>` | Overwrites if > 0 | Existing NFO value preserved |
+| Synopsis | `<outline>` | Overwrites with IAFD synopsis | Existing NFO value preserved |
+| Scene breakdown | `<plot>` | Overwrites with scene-by-scene breakdown | Existing NFO value preserved |
+| Genres | `<genre>` | Additive — adds `Compilation` when applicable | Existing NFO genres untouched |
+| Studios | `<studio>` | Additive — adds IAFD studio | Existing NFO studios untouched |
 | Actors | `<actor>` | Fully replaces; disambiguated `(N)` actors preserved | Actors wiped |
 | Writer | `<writer>` | Set to studio name (for Infuse studio browsing) | ⚠️ Existing value wiped |
 | ID | `<id>` | IAFD movie URL | Not set |
