@@ -6,14 +6,30 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 
 - Search via Startpage (no direct IAFD search traffic — avoids IP bans and Cloudflare blocks)
 - URL paste: paste an IAFD movie URL directly into the search box to skip search entirely
-- Metadata: title, year, runtime, director, studio, plot
-- Studio written as both `<credits>` and `<writer>` for Infuse compatibility
+- Metadata: title, year, runtime, director(s), studio, scene breakdown, synopsis, IAFD URL
+- Studio written as `<writer>` for Infuse studio-browsing compatibility
 - Full cast with headshots and role descriptions
 - `(Credited: Name)` aliases extracted into a custom `<credited>` NFO tag
 - 773-actor exclusion list (male performers) to keep cast lists focused on female performers
 - Actors sorted: pinned (alpha) first, then thumbed (alpha), then unthumbed (alpha)
 - Actor exclusion and pinned lists are live config files — editable without recompiling
 - Cloudflare detection with clear error messages
+
+## Scraped fields
+
+| Field | NFO tag | IAFD behaviour | If IAFD has no data |
+|---|---|---|---|
+| Title | `<title>` | Always overwrites | — (IAFD almost always has it) |
+| Director | `<director>` | Overwrites; supports multiple directors | Existing value preserved |
+| Released | `<premiered>` | Overwrites if valid date | Existing value preserved |
+| Runtime | `<runtime>` | Overwrites if > 0 | Existing value preserved |
+| Synopsis | `<outline>` | Overwrites with IAFD synopsis | Existing value preserved |
+| Scene breakdown | `<plot>` | Overwrites with scene-by-scene breakdown | Existing value preserved |
+| Genres | `<genre>` | Additive — adds `Compilation` when applicable | Existing genres untouched |
+| Studios | `<studio>` | Additive — adds IAFD studio | Existing studios untouched |
+| Actors | `<actor>` | Fully replaces; disambiguated `(N)` actors preserved | Actors wiped |
+| Writer | `<writer>` | Set to studio name (for Infuse studio browsing) | ⚠️ Existing value wiped |
+| ID | `<id>` | IAFD movie URL | Not set |
 
 ## Maintaining this fork
 
