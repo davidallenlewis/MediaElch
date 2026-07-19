@@ -24,7 +24,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Released | `<premiered>` `<year>` | Overwrites if valid date | Existing NFO value kept |
 | Runtime | `<runtime>` | Overwrites if > 0 | Existing NFO value kept |
 | Synopsis | `<outline>` | Overwrites with IAFD synopsis | Existing NFO value kept |
-| Scene breakdown | `<plot>` | Overwrites with scene-by-scene breakdown | Existing NFO value kept |
+| Scenes | `<plot>` | Overwrites with scene-by-scene breakdown | Existing NFO value kept |
 | Genres | `<genre>` | Additive — adds `Compilation` when applicable | Existing NFO genres untouched |
 | Studios | `<studio>` | Additive — adds IAFD studio | Existing NFO studios untouched |
 | Actors | `<actor>` | Fully replaces; disambiguated `(N)` actors kept | Actors wiped |
