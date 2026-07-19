@@ -20,6 +20,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Field | NFO tag | IAFD behaviour | When IAFD has NO data |
 |---|---|---|---|
 | Title | `<title>` | Always overwrites | IAFD always has `Title` |
+| ID | `<id>` | IAFD movie URL | IAFD always has `URL` |
 | Runtime | `<runtime>` | Overwrites if IAFD `Minutes` is greater than 0 | NFO value kept |
 | Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | NFO value kept |
 | Studios | `<studio>` | Adds IAFD `Studio` | NFO value kept |
@@ -29,7 +30,6 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Synopsis | `<outline>` | Overwrites with IAFD `Synopsis` if `Synopsis` exists | NFO value kept |
 | Scenes | `<plot>` | Overwrites with IAFD `Scene Breakdown` if it exists | NFO value kept |
 | Actors | `<actor>` | •Fully replaces all existing Actors w/ IAFD `Performers`<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors kept (image may be added)<br>•Male Actors are removed | IAFD always has `Performers` |
-| ID | `<id>` | IAFD movie URL | IAFD always has `URL` |
 
 ## Maintaining this fork
 
