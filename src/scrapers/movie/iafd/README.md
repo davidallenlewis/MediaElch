@@ -27,7 +27,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Scenes | `<plot>` | Overwrites with scene-by-scene breakdown | Existing NFO value kept |
 | Genres | `<genre>` | Adds `Compilation` when applicable | Existing NFO genres kept |
 | Studios | `<studio>` | Adds IAFD studio | Existing NFO studios kept |
-| Actors | `<actor>` | *Fully replaces *disambiguated `(N)` actors kept *sort by sticky then w/ and w/o thumb *eliminate men | Actors fully replaced |
+| Actors | `<actor>` | •Fully replaces<br>•Disambiguated `(N)` actors kept<br>•Sort by sticky then w/ and w/o thumbnail<br>•eliminate men | Actors fully replaced |
 | Writer | `<writer>` | Set to IAFD studio name (for Infuse studio browsing) | ⚠️ Existing value wiped |
 | ID | `<id>` | IAFD movie URL | Not set |
 
