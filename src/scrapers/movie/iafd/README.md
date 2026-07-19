@@ -19,7 +19,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 
 | Field | NFO tag | IAFD behaviour | If IAFD has no data |
 |---|---|---|---|
-| Title | `<title>` | Always overwrites | IAFD always has a Title |
+| Title | `<title>` | Always overwrites | Always has a Title |
 | Director | `<director>` | Overwrites; supports multiple directors | Existing NFO value kept |
 | Released | `<premiered>` `<year>` | Overwrites if valid date | Existing NFO value kept |
 | Runtime | `<runtime>` | Overwrites if > 0 | Existing NFO value kept |
@@ -29,7 +29,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Studios | `<studio>` | Adds IAFD studio | Existing NFO studios kept |
 | Actors | `<actor>` | •Fully replaces all existing Actors<br>•Disambiguated `(N)` actors are kept<br>•Sort by sticky then w/ and w/o thumbnail<br>•Eliminate Male Actors | Actors fully replaced |
 | Writer | `<writer>` | Set to IAFD studio name (for Infuse studio browsing) | ⚠️ Existing NFO value wiped |
-| ID | `<id>` | IAFD movie URL | IAFD always has the page URL at the bottom |
+| ID | `<id>` | IAFD movie URL | URL is always at bottom of page |
 
 ## Maintaining this fork
 
