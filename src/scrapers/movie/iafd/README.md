@@ -20,14 +20,14 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Field | NFO tag | IAFD behaviour | Fallback if IAFD has no data |
 |---|---|---|---|
 | Title | `<title>` | Always overwrites | IAFD always has a Title |
-| Director | `<director>` | Overwrites if IAFD directors exist (supports multiples) | Existing NFO value kept |
-| Released | `<premiered>` `<year>` | Overwrites if IAFD has a valid date | Existing NFO value kept |
-| Runtime | `<runtime>` | Overwrites if IAFD value is greater than 0 | Existing NFO value kept |
-| Synopsis | `<outline>` | Overwrites with IAFD synopsis | Existing NFO value kept |
-| Scenes | `<plot>` | Overwrites with IAFD Scene Breakdown | Existing NFO value kept |
+| Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | Existing NFO value kept |
+| Released | `<premiered>` `<year>` | Overwrites if IAFD `Release Date` exists | Existing NFO value kept |
+| Runtime | `<runtime>` | Overwrites if IAFD `Minutes` is greater than 0 | Existing NFO value kept |
+| Synopsis | `<outline>` | Overwrites with IAFD `Synopsis` when it exists | Existing NFO value kept |
+| Scenes | `<plot>` | Overwrites with IAFD `Scene Breakdown` | Existing NFO value kept |
 | Genres | `<genre>` | Adds `Compilation` when applicable | Existing NFO genres kept |
-| Studios | `<studio>` | Adds IAFD studio | Existing NFO studios kept |
-| Actors | `<actor>` | •Fully replaces all existing Actors<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors are kept (image may be added)<br>•Male Actors are removed | Always replaced w/ IAFD Actors |
+| Studios | `<studio>` | Adds IAFD `Studio` | Existing NFO studios kept |
+| Actors | `<actor>` | •Fully replaces all existing Actors w/ IAFD `Performers`<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors are kept (image may be added)<br>•Male Actors are removed | Always replaced w/ IAFD Actors |
 | Writer | `<writer>` | Set to IAFD studio (for Infuse studio browsing) | ⚠️ Existing NFO value wiped |
 | ID | `<id>` | IAFD movie URL | URL always at bottom of page |
 
