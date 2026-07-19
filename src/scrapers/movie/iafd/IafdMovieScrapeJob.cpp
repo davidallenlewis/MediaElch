@@ -1,5 +1,6 @@
 #include "scrapers/movie/iafd/IafdMovieScrapeJob.h"
 
+#include "data/ImdbId.h"
 #include "data/movie/Movie.h"
 
 #include <QDate>
@@ -96,6 +97,10 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
 {
     using namespace std::chrono;
 
+    // --- IAFD URL stored in <id> (reuses the ImdbId field; isValid() stays false
+    //     so no <uniqueid type="imdb"> tag is written) ---
+    m_movie->setImdbId(ImdbId(config().identifier.str()));
+
     // --- Title and Year from H1 (e.g. "Great Movie Name (2021)") ---
     {
         static const QRegularExpression h1Rx(
@@ -139,11 +144,26 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
         }
     }
 
-    // --- Director ---
+    // --- Director(s) ---
+    // IAFD uses "Director" for one and "Directors" for multiple.
+    // getBiodata returns plain text with <br>-separated names as newlines;
+    // MovieXmlWriter splits on ", " and writes one <director> tag each.
     {
-        const QString director = getBiodata(QStringLiteral("Director"));
-        if (!director.isEmpty()) {
-            m_movie->setDirector(director);
+        QString raw = getBiodata(QStringLiteral("Directors"));
+        if (raw.isEmpty()) {
+            raw = getBiodata(QStringLiteral("Director"));
+        }
+        if (!raw.isEmpty()) {
+            const QStringList names = raw.split(QRegularExpression(QStringLiteral("[\\r\\n]+")),
+                Qt::SkipEmptyParts);
+            QStringList trimmed;
+            for (const QString& n : names) {
+                const QString t = n.trimmed();
+                if (!t.isEmpty()) trimmed << t;
+            }
+            if (!trimmed.isEmpty()) {
+                m_movie->setDirector(trimmed.join(QStringLiteral(", ")));
+            }
         }
     }
 
@@ -156,7 +176,15 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
         }
     }
 
-    // --- Plot (synopsis div → padded-panel → li text only) ---
+    // --- Compilation genre ---
+    {
+        const QString compilation = getBiodata(QStringLiteral("Compilation"));
+        if (compilation.compare(QStringLiteral("Yes"), Qt::CaseInsensitive) == 0) {
+            m_movie->addGenre(QStringLiteral("Compilation"));
+        }
+    }
+
+    // --- Outline (synopsis div → li text joined into a single paragraph) ---
     {
         static const QRegularExpression synopsisRx(
             R"re(<div[^>]+id="synopsis"[^>]*>.*?<ul>(.*?)</ul>)re",
@@ -170,18 +198,60 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
             const QStringList lines = raw.split(QRegularExpression(QStringLiteral("[\\r\\n]+")),
                 Qt::SkipEmptyParts);
             static const QString termPunct = QStringLiteral(".!?:;,");
-            QString overview;
+            QString outline;
             for (const QString& rawLine : lines) {
                 const QString line = rawLine.trimmed();
                 if (line.isEmpty()) continue;
-                if (!overview.isEmpty()) overview += QLatin1Char(' ');
-                overview += line;
+                if (!outline.isEmpty()) outline += QLatin1Char(' ');
+                outline += line;
                 if (!termPunct.contains(line.back())) {
-                    overview += QLatin1Char('.');
+                    outline += QLatin1Char('.');
                 }
             }
-            if (!overview.isEmpty()) {
-                m_movie->setOverview(overview);
+            if (!outline.isEmpty()) {
+                m_movie->setOutline(outline);
+            }
+        }
+    }
+
+    // --- Plot (Scene Breakdowns table) ---
+    // The table with class "table" immediately follows the Scene Breakdowns panel heading.
+    {
+        static const QRegularExpression sceneTableRx(
+            R"re(<div[^>]+class="panel-heading"[^>]*>\s*<h3>\s*Scene Breakdowns\s*</h3>\s*</div>\s*<table[^>]+class="[^"]*\btable\b[^"]*"[^>]*>(.*?)</table>)re",
+            QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
+        static const QRegularExpression rowRx(
+            R"re(<tr[^>]*>(.*?)</tr>)re",
+            QRegularExpression::DotMatchesEverythingOption);
+        static const QRegularExpression cellRx(
+            R"re(<t[dh][^>]*>(.*?)</t[dh]>)re",
+            QRegularExpression::DotMatchesEverythingOption);
+
+        const auto tableMatch = sceneTableRx.match(html);
+        if (tableMatch.hasMatch()) {
+            const QString tableHtml = tableMatch.captured(1);
+            QString plot;
+            QRegularExpressionMatchIterator rowIt = rowRx.globalMatch(tableHtml);
+            while (rowIt.hasNext()) {
+                const QString rowHtml = rowIt.next().captured(1);
+                QStringList cells;
+                QRegularExpressionMatchIterator cellIt = cellRx.globalMatch(rowHtml);
+                while (cellIt.hasNext()) {
+                    const QString cellText =
+                        QTextDocumentFragment::fromHtml(cellIt.next().captured(1))
+                            .toPlainText()
+                            .trimmed();
+                    if (!cellText.isEmpty()) {
+                        cells << cellText;
+                    }
+                }
+                // Skip header rows or empty rows
+                if (cells.size() < 2) continue;
+                if (!plot.isEmpty()) plot += QLatin1Char('\n');
+                plot += cells[0] + QStringLiteral(": ") + cells[1];
+            }
+            if (!plot.isEmpty()) {
+                m_movie->setOverview(plot);
             }
         }
     }

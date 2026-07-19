@@ -4,11 +4,14 @@
 #include "log/Log.h"
 
 #include <QRegularExpression>
+#include <chrono>
 
 namespace mediaelch {
 namespace scraper {
 
 namespace {
+
+using namespace std::chrono_literals;
 
 // TODO: Option "only replace if source has value"
 void copyDetailToMovie(Movie& target,
@@ -45,11 +48,15 @@ void copyDetailToMovie(Movie& target,
         break;
     }
     case MovieScraperInfo::Released: {
-        target.setReleased(source.released());
+        if (source.released().isValid()) {
+            target.setReleased(source.released());
+        }
         break;
     }
     case MovieScraperInfo::Runtime: {
-        target.setRuntime(source.runtime());
+        if (source.runtime() > 0min) {
+            target.setRuntime(source.runtime());
+        }
         break;
     }
     case MovieScraperInfo::Certification: {
@@ -65,7 +72,9 @@ void copyDetailToMovie(Movie& target,
         break;
     }
     case MovieScraperInfo::Overview: {
-        target.setOverview(source.overview());
+        if (!source.overview().isEmpty()) {
+            target.setOverview(source.overview());
+        }
         break;
     }
     case MovieScraperInfo::Outline: {
@@ -184,7 +193,9 @@ void copyDetailToMovie(Movie& target,
         break;
     }
     case MovieScraperInfo::Director: {
-        target.setDirector(source.director());
+        if (!source.director().isEmpty()) {
+            target.setDirector(source.director());
+        }
         break;
     }
     case MovieScraperInfo::Tags: {

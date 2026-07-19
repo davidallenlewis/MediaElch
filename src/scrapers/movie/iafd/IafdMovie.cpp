@@ -22,10 +22,12 @@ IafdMovie::IafdMovie(QObject* parent) : MovieScraper(parent)
         MovieScraperInfo::Released,
         MovieScraperInfo::Runtime,
         MovieScraperInfo::Overview,
+        MovieScraperInfo::Outline,
         MovieScraperInfo::Director,
         MovieScraperInfo::Studios,
         MovieScraperInfo::Writer,
         MovieScraperInfo::Actors,
+        MovieScraperInfo::Genres,
     };
     m_meta.supportedLanguages = {"en"};
     m_meta.defaultLocale = "en";
