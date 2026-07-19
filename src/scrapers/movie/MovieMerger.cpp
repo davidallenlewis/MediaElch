@@ -189,7 +189,9 @@ void copyDetailToMovie(Movie& target,
         break;
     }
     case MovieScraperInfo::Writer: {
-        target.setWriter(source.writer());
+        if (!source.writer().isEmpty()) {
+            target.setWriter(source.writer());
+        }
         break;
     }
     case MovieScraperInfo::Director: {
