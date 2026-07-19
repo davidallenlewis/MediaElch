@@ -20,11 +20,11 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Field | NFO tag | IAFD behaviour | Fallback if IAFD has no data |
 |---|---|---|---|
 | Title | `<title>` | Always overwrites | IAFD always has a Title |
-| Director | `<director>` | Overwrites if directors exist (supports multiple directors) | Existing NFO value kept |
-| Released | `<premiered>` `<year>` | Overwrites if valid date | Existing NFO value kept |
-| Runtime | `<runtime>` | Overwrites if > 0 | Existing NFO value kept |
+| Director | `<director>` | Overwrites if IAFD directors exist (supports multiples) | Existing NFO value kept |
+| Released | `<premiered>` `<year>` | Overwrites if IAFD has a valid date | Existing NFO value kept |
+| Runtime | `<runtime>` | Overwrites if IAFD value is greater than 0 | Existing NFO value kept |
 | Synopsis | `<outline>` | Overwrites with IAFD synopsis | Existing NFO value kept |
-| Scenes | `<plot>` | Overwrites with scene breakdown | Existing NFO value kept |
+| Scenes | `<plot>` | Overwrites with IAFD Scene Breakdown | Existing NFO value kept |
 | Genres | `<genre>` | Adds `Compilation` when applicable | Existing NFO genres kept |
 | Studios | `<studio>` | Adds IAFD studio | Existing NFO studios kept |
 | Actors | `<actor>` | •Fully replaces all existing Actors<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors are kept (image may be added)<br>•Male Actors are removed | Always replaced w/ IAFD Actors |
