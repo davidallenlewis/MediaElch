@@ -124,7 +124,9 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
             QRegularExpression::DotMatchesEverythingOption);
         const auto m = bioRx.match(html);
         if (!m.hasMatch()) return {};
-        return QTextDocumentFragment::fromHtml(m.captured(1)).toPlainText().trimmed();
+        const QString value = QTextDocumentFragment::fromHtml(m.captured(1)).toPlainText().trimmed();
+        if (value.compare(QStringLiteral("No Data"), Qt::CaseInsensitive) == 0) return {};
+        return value;
     };
 
     // --- Runtime (Minutes) ---
@@ -161,8 +163,23 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
             QRegularExpression::DotMatchesEverythingOption);
         const auto m = synopsisRx.match(html);
         if (m.hasMatch()) {
-            const QString overview =
+            QString raw =
                 QTextDocumentFragment::fromHtml(m.captured(1)).toPlainText().trimmed();
+            // Each line is a complete block (scene heading or full sentence) —
+            // join them as sentences, adding a period when the line has none.
+            const QStringList lines = raw.split(QRegularExpression(QStringLiteral("[\\r\\n]+")),
+                Qt::SkipEmptyParts);
+            static const QString termPunct = QStringLiteral(".!?:;,");
+            QString overview;
+            for (const QString& rawLine : lines) {
+                const QString line = rawLine.trimmed();
+                if (line.isEmpty()) continue;
+                if (!overview.isEmpty()) overview += QLatin1Char(' ');
+                overview += line;
+                if (!termPunct.contains(line.back())) {
+                    overview += QLatin1Char('.');
+                }
+            }
             if (!overview.isEmpty()) {
                 m_movie->setOverview(overview);
             }
@@ -241,6 +258,16 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
         actor.order = pinned.contains(name) ? -1 : 0;
 
         m_movie->addActor(actor);
+    }
+
+    // Pinned ordering only matters when there are more actors than Infuse
+    // displays (15). With 15 or fewer, all actors are visible anyway.
+    if (m_movie->actors().size() <= 15) {
+        for (Actor* a : m_movie->actors()) {
+            if (a->order < 0) {
+                a->order = 0;
+            }
+        }
     }
 }
 

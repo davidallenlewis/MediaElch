@@ -196,6 +196,9 @@ void MovieXmlReader::movieActor(const QDomElement& actorElement)
     if (!actorElement.elementsByTagName("thumb").isEmpty()) {
         a.thumb = actorElement.elementsByTagName("thumb").at(0).toElement().text();
     }
+    if (!actorElement.elementsByTagName("order").isEmpty()) {
+        a.order = actorElement.elementsByTagName("order").at(0).toElement().text().toInt();
+    }
     m_movie.addActor(a);
 }
 

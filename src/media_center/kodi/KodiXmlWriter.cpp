@@ -44,14 +44,21 @@ void KodiXmlWriter::writeActors(QXmlStreamWriter& xml, const Actors& actors) con
 {
     QVector<const Actor*> sorted = actors.actors();
     std::sort(sorted.begin(), sorted.end(), [](const Actor* a, const Actor* b) {
+        const bool aPinned = a->order < 0;
+        const bool bPinned = b->order < 0;
         // Pinned actors (order < 0) sort before all others.
-        if (a->order != b->order) {
+        if (aPinned != bPinned) {
+            return aPinned;
+        }
+        // Among pinned actors, preserve their relative order, then name.
+        if (aPinned && a->order != b->order) {
             return a->order < b->order;
         }
+        // Among non-pinned actors: thumbed before non-thumbed, then alphabetical.
         const bool aHasThumb = !a->thumb.isEmpty();
         const bool bHasThumb = !b->thumb.isEmpty();
         if (aHasThumb != bHasThumb) {
-            return aHasThumb; // actors with thumbs first
+            return aHasThumb;
         }
         return a->name.compare(b->name, Qt::CaseInsensitive) < 0;
     });
@@ -65,6 +72,10 @@ void KodiXmlWriter::writeActors(QXmlStreamWriter& xml, const Actors& actors) con
         }
         if (!actor->role.isEmpty()) {
             xml.writeTextElement("role", actor->role);
+        }
+        // Persist negative order so pinned actors survive a re-save without re-scraping.
+        if (actor->order < 0) {
+            xml.writeTextElement("order", QString::number(actor->order));
         }
 
         if (writeThumbUrlsToNfo()) {
