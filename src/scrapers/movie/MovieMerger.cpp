@@ -23,7 +23,7 @@ void copyDetailToMovie(Movie& target,
     if (source.tmdbId().isValid()) {
         target.setTmdbId(source.tmdbId());
     }
-    if (source.imdbId().isValid()) {
+    if (!source.imdbId().toString().isEmpty()) {
         target.setImdbId(source.imdbId());
     }
 
