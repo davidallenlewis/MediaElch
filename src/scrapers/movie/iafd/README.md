@@ -17,7 +17,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 
 ## Scraping behaviour
 
-| Field | NFO tag | IAFD behaviour | When IAFD has no data |
+| Field | NFO tag | IAFD behaviour | When IAFD has **NO** data |
 |---|---|---|---|
 | Title | `<title>` | Always overwrites | IAFD always has `Title` |
 | Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | NFO value kept |
@@ -25,7 +25,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | Runtime | `<runtime>` | Overwrites if IAFD `Minutes` is greater than 0 | NFO value kept |
 | Synopsis | `<outline>` | Overwrites with IAFD `Synopsis` if `Synopsis` exists | NFO value kept |
 | Scenes | `<plot>` | Overwrites with IAFD `Scene Breakdown` if it exists | NFO value kept |
-| Genres | `<genre>` | Adds `Compilation` when IAFD `Compilation` is `Yes` | IAFD values added to |
+| Genres | `<genre>` | Adds `Compilation` when IAFD `Compilation` is `Yes` | NFO value kept |
 | Studios | `<studio>` | Adds IAFD `Studio` | NFO value kept |
 | Actors | `<actor>` | •Fully replaces all existing Actors w/ IAFD `Performers`<br>•Sorted `A-Z` in 3 groups (Sticky, w/ Thumb, w/o Thumb)<br>•Disambiguated `(N)` actors kept (image may be added)<br>•Male Actors are removed | IAFD always has `Performers` |
 | Writer | `<writer>` | Set to IAFD `Studio` (for Infuse studio browsing) | ⚠️ NFO value wiped |
