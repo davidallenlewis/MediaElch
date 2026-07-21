@@ -64,7 +64,12 @@ These are the only files modified compared to upstream MediaElch:
 |------|--------|
 | `src/data/Actor.h` | Added `creditedAs` field |
 | `src/media_center/kodi/KodiXmlWriter.cpp` | Actor sort order (pinned → thumbed → unthumbed), `<credited>` tag, `<thumb>` always written |
-| `src/media_center/kodi/MovieXmlWriter.cpp` | Writes `<writer>` tag alongside `<credits>` |
+| `src/media_center/kodi/MovieXmlWriter.cpp` | Writes `<writer>` tag alongside `<credits>`; tab indentation |
+| `src/media_center/kodi/TvShowXmlWriter.cpp` | Tab indentation |
+| `src/media_center/kodi/EpisodeXmlWriter.cpp` | Tab indentation |
+| `src/media_center/kodi/ConcertXmlWriter.cpp` | Tab indentation |
+| `src/media_center/kodi/AlbumXmlWriter.cpp` | Tab indentation |
+| `src/media_center/kodi/ArtistXmlWriter.cpp` | Tab indentation |
 | `CMakeLists.txt` (iafd subfolder) | Build integration |
 | `ScraperManager.cpp` | Scraper registration |
 | `ui.qrc` | Exclusion and pinned actor list resources (seed files only) |

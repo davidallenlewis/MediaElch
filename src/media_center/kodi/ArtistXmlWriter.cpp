@@ -19,6 +19,7 @@ QByteArray ArtistXmlWriterGeneric::getArtistXml(bool testMode)
     QByteArray xmlContent;
     QXmlStreamWriter xml(&xmlContent);
     xml.setAutoFormatting(true);
+    xml.setAutoFormattingIndent(-1);
     xml.writeStartDocument("1.0", true);
 
     xml.writeStartElement("artist");
