@@ -87,6 +87,11 @@ void IafdMovieApi::sendGetRequest(const QUrl& url, const QString& referer, IafdM
     }
     request.setRawHeader("Sec-Fetch-User", "?1");
 
+    // Google shows a cookie-consent interstitial unless SOCS=CAI is present.
+    if (url.host().contains(QStringLiteral("google.com"), Qt::CaseInsensitive)) {
+        request.setRawHeader("Cookie", "SOCS=CAI");
+    }
+
     if (m_network.cache().hasValidElement(request)) {
         // Do not immediately run the callback because classes higher up may
         // set up a Qt connection while the network request is running.
@@ -148,10 +153,7 @@ void IafdMovieApi::sendGetRequest(const QUrl& url, const QString& referer, IafdM
 
 void IafdMovieApi::searchForMovie(const QString& query, IafdMovieApi::ApiCallback callback)
 {
-    // Use DuckDuckGo HTML search as intermediary — avoids hitting IAFD's
-    // search endpoint entirely (no Cloudflare, no IP-ban risk on IAFD).
-    // We request the no-JS HTML version which returns direct destination URLs.
-    sendGetRequest(makeMovieSearchUrl(query), {}, std::move(callback));
+    sendGetRequest(makeStartpageSearchUrl(query), {}, std::move(callback));
 }
 
 void IafdMovieApi::loadMovie(const QString& url, IafdMovieApi::ApiCallback callback)
@@ -159,17 +161,16 @@ void IafdMovieApi::loadMovie(const QString& url, IafdMovieApi::ApiCallback callb
     sendGetRequest(makeMovieUrl(url), {}, std::move(callback));
 }
 
-QUrl IafdMovieApi::makeMovieSearchUrl(const QString& searchStr)
+QUrl IafdMovieApi::makeStartpageSearchUrl(const QString& searchStr)
 {
-    // Use Startpage (Google proxy) to search for IAFD title pages.
-    // Startpage returns direct IAFD /title.rme/id=UUID URLs in h2/h3 headings
-    // without requiring CAPTCHA solving or Cloudflare bypass.
-    // site:iafd.com/title.rme scopes results to IAFD movie pages only.
+    // Startpage (Google proxy) — keyword search using domain as implicit filter.
+    // Using bare "iafd.com TITLE" (without /title.rme or site:) gives better coverage.
     QUrl url(QStringLiteral("https://www.startpage.com/search"));
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("q"),
-        QStringLiteral("site:iafd.com/title.rme ") + searchStr);
+        QStringLiteral("www.iafd.com ") + searchStr);
     q.addQueryItem(QStringLiteral("cat"), QStringLiteral("web"));
+    q.addQueryItem(QStringLiteral("safe"), QStringLiteral("off"));
     url.setQuery(q);
     return url;
 }

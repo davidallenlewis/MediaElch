@@ -46,3 +46,27 @@ We're active in the [Kodi forum](https://forum.kodi.tv/showthread.php?tid=136333
 and on [GitHub](https://github.com/Komet/MediaElch).
 If you want to report a bug, please see
 ["Bug Reports"](https://mediaelch.github.io/mediaelch-doc/contributing/bug-reports.html).
+
+---
+
+## Fork Modifications
+
+This is a personal fork. The following files have been modified from upstream and
+will need to be re-applied when rebasing onto a new upstream release:
+
+### IAFD Scraper (new files — not in upstream)
+- `src/scrapers/movie/iafd/` — entire directory (IafdMovieScraper, IafdMovieApi, IafdMovieSearchJob, IafdMovieScrapeJob, IafdMovieParser)
+
+### NFO / XML Writers
+- `src/media_center/kodi/MovieXmlWriter.cpp` — tab indentation (`setAutoFormattingIndent(-1)`), `<writer>` tag output
+- `src/media_center/kodi/MovieXmlReader.cpp` — reads `<writer>` tag as fallback for `<credits>`
+- `src/media_center/kodi/TvShowXmlWriter.cpp` — tab indentation
+- `src/media_center/kodi/EpisodeXmlWriter.cpp` — tab indentation
+- `src/media_center/kodi/ConcertXmlWriter.cpp` — tab indentation
+- `src/media_center/kodi/AlbumXmlWriter.cpp` — tab indentation
+- `src/media_center/kodi/ArtistXmlWriter.cpp` — tab indentation
+
+### Movie Detail UI
+- `src/ui/movies/MovieWidget.ui` — removed Logo/ClearArt/DiscArt/Banner art page; poster/fanart/thumb widened to 360px
+- `src/ui/movies/MovieWidget.cpp` — removed art page toggle logic and logo/clearArt/cdArt/banner widget references; `setFixedSize(360)` for poster/backdrop/thumb
+- `src/ui/movies/MovieWidget.h` — removed `onArtPageOne()`/`onArtPageTwo()` slot declarations

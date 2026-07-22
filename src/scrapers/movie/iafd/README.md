@@ -4,7 +4,7 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 
 ## Features
 
-- Search via Startpage (no direct IAFD search traffic — avoids IP bans and Cloudflare blocks)
+- Search via DuckDuckGo HTML (primary) with Startpage fallback — no JS required, no direct IAFD search traffic
 - URL paste: paste an IAFD movie URL directly into the search box to skip search entirely
 - Metadata: title, year, runtime, director(s), studio, scene breakdown, synopsis, IAFD URL
 - Studio written as `<writer>` for Infuse studio-browsing compatibility
@@ -64,6 +64,7 @@ These are the only files modified compared to upstream MediaElch:
 |------|--------|
 | `src/data/Actor.h` | Added `creditedAs` field |
 | `src/media_center/kodi/KodiXmlWriter.cpp` | Actor sort order (pinned → thumbed → unthumbed), `<credited>` tag, `<thumb>` always written |
+| `src/media_center/kodi/MovieXmlReader.cpp` | Reads `<writer>` tag as fallback when `<credits>` is absent |
 | `src/media_center/kodi/MovieXmlWriter.cpp` | Writes `<writer>` tag alongside `<credits>`; tab indentation |
 | `src/media_center/kodi/TvShowXmlWriter.cpp` | Tab indentation |
 | `src/media_center/kodi/EpisodeXmlWriter.cpp` | Tab indentation |

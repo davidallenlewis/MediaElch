@@ -44,7 +44,7 @@ int MovieSearch::execWithSearch(QString searchString, ImdbId id, TmdbId tmdbId)
 
     QSize newSize;
     newSize.setHeight(parentWidget()->size().height() - 200);
-    newSize.setWidth(qMin(600, parentWidget()->size().width() - 400));
+    newSize.setWidth(qMin(900, parentWidget()->size().width() - 100));
     resize(newSize);
 
     ui->movieSearchWidget->openAndSearch(searchString, id, tmdbId);

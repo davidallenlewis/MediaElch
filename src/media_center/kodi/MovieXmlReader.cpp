@@ -132,6 +132,15 @@ bool MovieXmlReader::parseNfoDom(QDomDocument domDoc)
             writers.append(writer.trimmed());
         }
     }
+    if (writers.isEmpty()) {
+        QDomNodeList domWriters = domDoc.elementsByTagName("writer");
+        for (int i = 0, n = domWriters.size(); i < n; i++) {
+            const auto writerNames = domWriters.at(i).toElement().text().split(",", ElchSplitBehavior::SkipEmptyParts);
+            for (const QString& writer : writerNames) {
+                writers.append(writer.trimmed());
+            }
+        }
+    }
     m_movie.setWriter(writers.join(", "));
 
     QStringList tvShowLinks;

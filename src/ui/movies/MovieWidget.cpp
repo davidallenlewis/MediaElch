@@ -41,8 +41,6 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
     ui->lblReloadStreamDetailsError->setVisible(false);
 
     ui->subtitles->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->artStackedWidget->setAnimation(QEasingCurve::OutCubic);
-    ui->artStackedWidget->setSpeed(300);
     ui->localTrailer->setBadgeType(Badge::Type::LabelSuccess);
     ui->localTrailer->setVisible(false);
     ui->badgeWatched->setBadgeType(Badge::Type::BadgeInfo);
@@ -60,11 +58,7 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
     font.setPointSize(font.pointSize() - 2);
 #endif
 
-    ui->labelBanner->setFont(font);
-    ui->labelClearArt->setFont(font);
-    ui->labelDiscArt->setFont(font);
     ui->labelFanart->setFont(font);
-    ui->labelLogo->setFont(font);
     ui->labelPoster->setFont(font);
     ui->labelThumb->setFont(font);
 
@@ -72,11 +66,7 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
 
     ui->poster->setDefaultPixmap(QPixmap(":/img/placeholders/poster.png"));
     ui->backdrop->setDefaultPixmap(QPixmap(":/img/placeholders/fanart.png"));
-    ui->logo->setDefaultPixmap(QPixmap(":/img/placeholders/logo.png"));
-    ui->clearArt->setDefaultPixmap(QPixmap(":/img/placeholders/clear_art.png"));
-    ui->cdArt->setDefaultPixmap(QPixmap(":/img/placeholders/cd_art.png"));
     ui->thumb->setDefaultPixmap(QPixmap(":/img/placeholders/thumb.png"));
-    ui->banner->setDefaultPixmap(QPixmap(":/img/placeholders/banner.png"));
 
     ui->buttonDownloadTrailer->setIcon(
         Manager::instance()->iconFont()->icon("download", QColor(150, 150, 150), "", -1, 1.0));
@@ -115,11 +105,11 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
 
     ui->poster->setImageType(ImageType::MoviePoster);
     ui->backdrop->setImageType(ImageType::MovieBackdrop);
-    ui->logo->setImageType(ImageType::MovieLogo);
-    ui->cdArt->setImageType(ImageType::MovieCdArt);
-    ui->banner->setImageType(ImageType::MovieBanner);
     ui->thumb->setImageType(ImageType::MovieThumb);
-    ui->clearArt->setImageType(ImageType::MovieClearArt);
+
+    ui->poster->setFixedSize(Qt::Horizontal, 360);
+    ui->backdrop->setFixedSize(Qt::Horizontal, 360);
+    ui->thumb->setFixedSize(Qt::Horizontal, 360);
 
     const auto images = ui->artStackedWidget->findChildren<ClosableImage*>();
     for (ClosableImage* image : images) {
@@ -239,14 +229,7 @@ void MovieWidget::resizeEvent(QResizeEvent* event)
 
 void MovieWidget::setBigWindow(bool bigWindow)
 {
-    if (bigWindow && !ui->artStackedWidget->isExpanded()) {
-        ui->artStackedWidget->expandToOne();
-        ui->artStackedWidgetButtons->setVisible(false);
-    } else if (!bigWindow && ui->artStackedWidget->isExpanded()) {
-        ui->artStackedWidget->collapse();
-        ui->artStackedWidgetButtons->setVisible(true);
-        onArtPageOne(); // ensure buttons match visible images
-    }
+    Q_UNUSED(bigWindow)
 }
 
 /**
@@ -294,10 +277,6 @@ void MovieWidget::clear()
 
     ui->poster->clear();
     ui->backdrop->clear();
-    ui->logo->clear();
-    ui->clearArt->clear();
-    ui->cdArt->clear();
-    ui->banner->clear();
     ui->thumb->clear();
 
     bool blocked = false;
@@ -1064,25 +1043,6 @@ void MovieWidget::removeCountry(QString country)
     ui->buttonRevert->setVisible(true);
 }
 
-/**
- * \brief Shows the first page with movie art
- */
-void MovieWidget::onArtPageOne()
-{
-    ui->artStackedWidget->slideInIdx(0);
-    ui->buttonArtPageTwo->setChecked(false);
-    ui->buttonArtPageOne->setChecked(true);
-}
-
-/**
- * \brief Shows the second page with movie art
- */
-void MovieWidget::onArtPageTwo()
-{
-    ui->artStackedWidget->slideInIdx(1);
-    ui->buttonArtPageOne->setChecked(false);
-    ui->buttonArtPageTwo->setChecked(true);
-}
 
 /*** Pass GUI events to movie object ***/
 

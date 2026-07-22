@@ -265,6 +265,12 @@ void copyDetailsToMovie(Movie& target,
     for (MovieScraperInfo detail : details) {
         copyDetailToMovie(target, source, detail, usePlotForOutline, ignoreDuplicateOriginalTitle);
     }
+    // Always copy originalTitle even when the Title checkbox is unchecked, so
+    // scrapers (e.g. IAFD) can populate it as a verification reference without
+    // overwriting the user's manually-edited title.
+    if (!details.contains(MovieScraperInfo::Title) && !source.originalTitle().isEmpty()) {
+        target.setOriginalTitle(source.originalTitle());
+    }
     target.blockSignals(wasBlocked);
 }
 

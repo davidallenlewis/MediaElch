@@ -19,8 +19,7 @@ public:
     void doStart() override;
 
 private:
-    bool isDuckDuckGoChallengeResponse(const QString& html);
-    void parseSearch(const QString& html);
+    static QList<MovieSearchJob::Result> parseSearchStartpage(const QString& html);
 
 private:
     IafdMovieApi& m_api;

@@ -112,6 +112,7 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
                 QTextDocumentFragment::fromHtml(m.captured(1).trimmed()).toPlainText().trimmed();
             if (!title.isEmpty()) {
                 m_movie->setTitle(title);
+                m_movie->setOriginalTitle(title);
             }
             const int year = m.captured(2).toInt();
             if (year > 1800) {

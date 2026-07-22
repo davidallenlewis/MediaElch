@@ -79,8 +79,6 @@ private slots:
     void removeCountry(QString country);
     void onRevertChanges();
     void onPlayMovie();
-    void onArtPageOne();
-    void onArtPageTwo();
 
     void onNameChange(QString text);
     void onOriginalNameChange(QString text);
