@@ -214,7 +214,8 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
     ui->buttonRevert->setVisible(false);
 
     // Cmd+Z: if a text field has focus, forward undo to it so normal typing-undo
-    // still works. Otherwise, if there are unsaved changes, revert the movie.
+    // still works. Otherwise, if there are unsaved changes, snapshot scraped actors
+    // and revert the movie.
     auto* revertShortcut = new QShortcut(QKeySequence::Undo, this);
     connect(revertShortcut, &QShortcut::activated, this, [this]() {
         auto* fw = QApplication::focusWidget();
@@ -227,9 +228,19 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
             return;
         }
         if (ui->buttonRevert->isVisible()) {
+            // Always snapshot current actors before reverting so Cmd+Shift+Z
+            // can toggle back regardless of how many times the user flips.
+            m_actorSnapshot.clear();
+            for (Actor* a : m_movie->actors().actors()) {
+                m_actorSnapshot.append(*a);
+            }
             onRevertChanges();
         }
     });
+
+    // Cmd+Shift+Z: swap current actors with the scraped snapshot.
+    auto* redoActorsShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z), this);
+    connect(redoActorsShortcut, &QShortcut::activated, this, &MovieWidget::onRedoActors);
 }
 
 MovieWidget::~MovieWidget()
@@ -358,6 +369,7 @@ void MovieWidget::setMovie(Movie* movie)
 {
     using namespace std::chrono;
     qCDebug(generic) << "[MovieWidget] Changing movie to:" << movie->title();
+    m_actorSnapshot.clear();
     movie->controller()->loadData(Manager::instance()->mediaCenterInterface());
     if (!movie->streamDetailsLoaded() && Settings::instance()->autoLoadStreamDetails()) {
         // TODO: Load asynchronously
@@ -458,6 +470,7 @@ void MovieWidget::onInfoLoadDone(Movie* movie)
         return;
     }
     if (m_movie == movie) {
+        m_actorSnapshot.clear(); // new scrape result — old snapshot is stale
         updateMovieInfo();
         ui->buttonRevert->setVisible(true);
         emit setActionSaveEnabled(false, MainWidgets::Movies);
@@ -903,6 +916,7 @@ void MovieWidget::onPlayLocalTrailer()
 void MovieWidget::saveInformation()
 {
     qCDebug(generic) << "[Movie] Save movie";
+    m_actorSnapshot.clear();
     setDisabledTrue();
 
     QVector<Movie*> movies = MovieFilesWidget::instance()->selectedMovies();
@@ -997,6 +1011,23 @@ void MovieWidget::onRevertChanges()
     m_movie->clearImages();
     m_movie->controller()->loadData(Manager::instance()->mediaCenterInterface(), true);
     updateMovieInfo();
+}
+
+void MovieWidget::onRedoActors()
+{
+    if (m_movie == nullptr || m_actorSnapshot.isEmpty()) {
+        return;
+    }
+    // Snapshot the current (NFO) actors so the toggle goes both ways.
+    QVector<Actor> current;
+    for (Actor* a : m_movie->actors().actors()) {
+        current.append(*a);
+    }
+    m_movie->setActors(m_actorSnapshot);
+    m_actorSnapshot = current;
+    m_movie->setChanged(true);
+    ui->actors->setMovie(m_movie);
+    ui->buttonRevert->setVisible(true);
 }
 
 void MovieWidget::onPlayMovie()

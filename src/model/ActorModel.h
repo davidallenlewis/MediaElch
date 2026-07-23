@@ -19,7 +19,8 @@ public:
     enum Columns
     {
         NameColumn = 0,
-        RoleColumn = 1
+        CreditedAsColumn = 1,
+        RoleColumn = 2
     };
 
 public:

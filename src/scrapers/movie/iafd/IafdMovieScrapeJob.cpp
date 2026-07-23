@@ -271,7 +271,7 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
     // in the biodata section.
     // Group 1: person href, 2: thumb URL, 3: name
     static const QRegularExpression castboxRx(
-        R"re(<div[^>]+class="castbox"[^>]*>(.*?)</div\s*>)re",
+        R"re(<div[^>]+class="castbox[^"]*"[^>]*>(.*?)</div\s*>)re",
         QRegularExpression::DotMatchesEverythingOption);
     static const QRegularExpression actorRx(
         R"re(<a\s+href="(/person\.rme[^"]*)"[^>]*>\s*(?:<img[^>]+src="([^"]*)"[^>]*/?>)?\s*(?:<br\s*/?>\s*)?([^<\r\n]+?)\s*</a>)re",
@@ -286,6 +286,8 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
     // without restarting the app.
     const QSet<QString> excluded = excludedActors();
     const QSet<QString> pinned = pinnedActors();
+
+    QVector<Actor> collectedActors;
 
     QRegularExpressionMatchIterator castboxIt = castboxRx.globalMatch(html);
     while (castboxIt.hasNext()) {
@@ -342,17 +344,31 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
 
         actor.order = pinned.contains(name) ? -1 : 0;
 
-        m_movie->addActor(actor);
+        collectedActors.append(actor);
     }
 
-    // Pinned ordering only matters when there are more actors than Infuse
-    // displays (15). With 15 or fewer, all actors are visible anyway.
-    if (m_movie->actors().size() <= 15) {
-        for (Actor* a : m_movie->actors()) {
-            if (a->order < 0) {
-                a->order = 0;
-            }
+    // Sort to match KodiXmlWriter order so the UI preview is already alphabetical:
+    // pinned first (only when >15 actors), then thumbed before unthumbed, then A-Z within each group.
+    const bool stripPinned = collectedActors.size() <= 15;
+    std::sort(collectedActors.begin(), collectedActors.end(), [stripPinned](const Actor& a, const Actor& b) {
+        if (!stripPinned) {
+            const bool aPinned = a.order < 0;
+            const bool bPinned = b.order < 0;
+            if (aPinned != bPinned) return aPinned;
         }
+        const bool aHasThumb = !a.thumb.isEmpty();
+        const bool bHasThumb = !b.thumb.isEmpty();
+        if (aHasThumb != bHasThumb) return aHasThumb;
+        return a.name.compare(b.name, Qt::CaseInsensitive) < 0;
+    });
+
+    for (Actor& actor : collectedActors) {
+        // Pinned ordering only matters when there are more actors than Infuse
+        // displays (15). With 15 or fewer, all actors are visible anyway.
+        if (stripPinned && actor.order < 0) {
+            actor.order = 0;
+        }
+        m_movie->addActor(actor);
     }
 }
 

@@ -78,6 +78,7 @@ private slots:
     void addCountry(QString country);
     void removeCountry(QString country);
     void onRevertChanges();
+    void onRedoActors();
     void onPlayMovie();
 
     void onNameChange(QString text);
@@ -131,6 +132,7 @@ private:
     QVector<QVector<QLineEdit*>> m_streamDetailsAudio;
     QVector<QVector<QLineEdit*>> m_streamDetailsSubtitles;
     QLabel* m_backgroundLabel;
+    QVector<Actor> m_actorSnapshot; // scraped actors saved on Cmd+Z for Cmd+Shift+Z toggle
 
     void updateImages(QSet<ImageType> images);
 };

@@ -202,6 +202,9 @@ void MovieXmlReader::movieActor(const QDomElement& actorElement)
     if (!actorElement.elementsByTagName("role").isEmpty()) {
         a.role = actorElement.elementsByTagName("role").at(0).toElement().text();
     }
+    if (!actorElement.elementsByTagName("credited").isEmpty()) {
+        a.creditedAs = actorElement.elementsByTagName("credited").at(0).toElement().text();
+    }
     if (!actorElement.elementsByTagName("thumb").isEmpty()) {
         a.thumb = actorElement.elementsByTagName("thumb").at(0).toElement().text();
     }

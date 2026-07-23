@@ -36,7 +36,7 @@ int ActorModel::columnCount(const QModelIndex& parent) const
         // Root has an invalid model index.
         return 0;
     }
-    return 2;
+    return 3;
 }
 
 QVariant ActorModel::data(const QModelIndex& index, int role) const
@@ -61,6 +61,7 @@ QVariant ActorModel::data(const QModelIndex& index, int role) const
         switch (index.column()) {
         case Columns::NameColumn: return actor->name;
         case Columns::RoleColumn: return actor->role;
+        case Columns::CreditedAsColumn: return actor->creditedAs;
         }
         break;
     }
@@ -82,6 +83,7 @@ QVariant ActorModel::headerData(int section, Qt::Orientation orientation, int ro
     switch (section) {
     case Columns::NameColumn: return tr("Actor");
     case Columns::RoleColumn: return tr("Role");
+    case Columns::CreditedAsColumn: return tr("Credited As");
     }
 
     return {};
@@ -118,6 +120,7 @@ bool ActorModel::setData(const QModelIndex& index, const QVariant& value, int ro
     switch (index.column()) {
     case Columns::NameColumn: actor->name = value.toString(); break;
     case Columns::RoleColumn: actor->role = value.toString(); break;
+    case Columns::CreditedAsColumn: actor->creditedAs = value.toString(); break;
     }
 
     emit dataChanged(index, index, {role});
