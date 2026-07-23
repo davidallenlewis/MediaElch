@@ -23,9 +23,9 @@ Scraper for [IAFD (Internet Adult Film Database)](https://www.iafd.com) built as
 | ID | `<id>` | IAFD movie URL | IAFD always has `URL` |
 | Actors | `<actor>` | •Fully replaces all existing Actors w/ IAFD `Performers`<br>•Sorted `A-Z` in 3 groups (Pinned, Thumbed, Unthumbed)<br>•Disambiguated `(N)` actors kept (image may be added)<br>•Male Actors are removed | IAFD always has `Performers` |
 | Runtime | `<runtime>` | Overwrites if IAFD `Minutes` is greater than 0 | NFO value kept |
-| Director | `<director>` | Overwrites if IAFD `Director` exist (supports multiples) | NFO value kept |
-| Studio | `<studio>` | Adds IAFD `Studio` | NFO value kept |
-| Writer | `<writer>` | Set to IAFD `Studio` (for Infuse studio browsing) | NFO value kept |
+| Director | `<director>` | Fills in IAFD `Director` only if NFO has none (supports multiples) | NFO value kept |
+| Studio | `<studio>` | Adds IAFD `Studio` only if NFO has no studio | NFO value kept |
+| Writer | `<writer>` | Set to IAFD `Studio` only if NFO has no writer | NFO value kept |
 | Genres | `<genre>` | Adds `Compilation` when IAFD `Compilation` is `Yes` | NFO value kept |
 | Released | `<premiered>` `<year>` | Overwrites if IAFD `Release Date` exists | NFO value kept |
 | Synopsis | `<outline>` | Overwrites with IAFD `Synopsis` if `Synopsis` exists | NFO value kept |

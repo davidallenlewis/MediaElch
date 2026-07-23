@@ -250,7 +250,8 @@ bool Filter::accepts(Movie* movie)
                    && movie->streamDetails()->videoDetails().value(StreamDetails::VideoDetails::Codec).isEmpty());
     }
     if (isInfo(MovieFilters::ImdbId)) {
-        return (m_hasInfo && movie->imdbId() == ImdbId(m_shortText)) || (!m_hasInfo && !movie->imdbId().isValid());
+        return (m_hasInfo && movie->imdbId() == ImdbId(m_shortText))
+               || (!m_hasInfo && movie->imdbId().toString().isEmpty());
     }
     if (isInfo(MovieFilters::TmdbId)) {
         return (m_hasInfo && movie->tmdbId() == TmdbId(m_shortText)) || (!m_hasInfo && !movie->tmdbId().isValid());

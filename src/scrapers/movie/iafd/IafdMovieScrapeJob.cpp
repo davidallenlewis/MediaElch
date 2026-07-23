@@ -48,12 +48,13 @@ void seedActorListConfigFiles()
 
 static QSet<QString> loadActorList(const QString& filePath)
 {
+    static const QRegularExpression wsRx(QStringLiteral("\\s+"));
     QSet<QString> names;
     QFile f(filePath);
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&f);
         while (!in.atEnd()) {
-            const QString line = in.readLine().trimmed();
+            const QString line = in.readLine().trimmed().replace(wsRx, QStringLiteral(" "));
             if (!line.isEmpty() && !line.startsWith(QLatin1Char('#'))) {
                 names.insert(line);
             }
@@ -146,10 +147,11 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
     }
 
     // --- Director(s) ---
+    // Only fill in if the NFO has no director — preserves hand-normalised values.
     // IAFD uses "Director" for one and "Directors" for multiple.
     // getBiodata returns plain text with <br>-separated names as newlines;
     // MovieXmlWriter splits on ", " and writes one <director> tag each.
-    {
+    if (m_movie->director().isEmpty()) {
         QString raw = getBiodata(QStringLiteral("Directors"));
         if (raw.isEmpty()) {
             raw = getBiodata(QStringLiteral("Director"));
@@ -169,10 +171,16 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
     }
 
     // --- Studio → also copied into Writer for Infuse compatibility ---
-    {
+    // Only fill in if the NFO has no studio/writer — preserves hand-normalised values.
+    if (m_movie->studios().isEmpty()) {
         const QString studio = getBiodata(QStringLiteral("Studio"));
         if (!studio.isEmpty()) {
             m_movie->addStudio(studio);
+        }
+    }
+    if (m_movie->writer().isEmpty()) {
+        const QString studio = getBiodata(QStringLiteral("Studio"));
+        if (!studio.isEmpty()) {
             m_movie->setWriter(studio);
         }
     }
@@ -288,8 +296,14 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
             continue;
         }
 
+        // Normalize: collapse all Unicode whitespace variants to plain spaces,
+        // then trim — ensures non-breaking spaces etc. don't defeat the exclude check.
+        static const QRegularExpression wsRx(QStringLiteral("\\s+"));
         const QString name =
-            QTextDocumentFragment::fromHtml(m.captured(3).trimmed()).toPlainText().trimmed();
+            QTextDocumentFragment::fromHtml(m.captured(3).trimmed())
+                .toPlainText()
+                .trimmed()
+                .replace(wsRx, QStringLiteral(" "));
         if (name.isEmpty()) {
             continue;
         }

@@ -46,6 +46,7 @@ public:
     QSet<MovieScraperInfo> infosToLoad();
     QHash<mediaelch::scraper::MovieScraper*, mediaelch::scraper::MovieIdentifier> customScraperIds();
 
+protected:
 private slots:
     void onScrapeClicked();
 

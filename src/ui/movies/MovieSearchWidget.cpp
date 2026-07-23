@@ -25,6 +25,7 @@ MovieSearchWidget::MovieSearchWidget(QWidget* parent) : QWidget(parent), ui(new 
     connect(ui->comboLanguage, &LanguageCombo::languageChanged, this, &MovieSearchWidget::onLanguageChanged,Qt::QueuedConnection);
 
     connect(ui->results,       &QTableWidget::itemDoubleClicked,      this, &MovieSearchWidget::onResultDoubleClicked);
+    connect(ui->results,       &QTableWidget::itemActivated,          this, &MovieSearchWidget::onResultDoubleClicked);
     connect(ui->results,       &QTableWidget::currentItemChanged,     this, &MovieSearchWidget::onSelectedResultChanged);
     connect(ui->searchString,  &MyLineEdit::returnPressed,      this, &MovieSearchWidget::startSearch);
     // clang-format on
@@ -242,13 +243,12 @@ void MovieSearchWidget::onShowResults(mediaelch::scraper::MovieSearchJob* search
     qCDebug(generic) << "[MovieSearch] Count: " << searchJob->results().size();
     showSuccess(tr("Found %n results", "", qsizetype_to_int(searchJob->results().size())));
 
-
     for (const MovieSearchJob::Result& result : asConst(searchJob->results())) {
-        const QString resultName = result.released.isNull()
-                                       ? result.title
-                                       : QStringLiteral("%1 (%2)").arg(result.title, result.released.toString("yyyy"));
+        const QString displayName = result.released.isNull()
+                                        ? result.title
+                                        : QStringLiteral("%1 (%2)").arg(result.title, result.released.toString("yyyy"));
 
-        auto* item = new QTableWidgetItem(resultName);
+        auto* item = new QTableWidgetItem(displayName);
         item->setData(Qt::UserRole, result.identifier.str());
 
         const int row = ui->results->rowCount();
@@ -256,6 +256,7 @@ void MovieSearchWidget::onShowResults(mediaelch::scraper::MovieSearchJob* search
         ui->results->setItem(row, 0, item);
     }
     ui->results->setCurrentCell(0, 0);
+    ui->results->setFocus();
 }
 
 void MovieSearchWidget::onSelectedResultChanged(QTableWidgetItem* current, QTableWidgetItem* previous)

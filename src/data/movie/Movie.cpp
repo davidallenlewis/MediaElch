@@ -86,6 +86,9 @@ void Movie::clear()
           << MovieScraperInfo::Outline;
     clear(infos);
     m_nfoContent.clear();
+    // IDs are not part of MovieScraperInfo, so clear them explicitly here.
+    m_imdbId = ImdbId{};
+    m_tmdbId = TmdbId{};
 }
 
 /**
@@ -1061,7 +1064,7 @@ mediaelch::ResumeTime Movie::resumeTime() const
 
 bool Movie::hasValidImdbId() const
 {
-    return m_imdbId.isValid();
+    return !m_imdbId.toString().isEmpty();
 }
 
 bool Movie::hasImage(ImageType imageType) const

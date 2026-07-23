@@ -2,7 +2,6 @@
 #include "ui_MovieSearch.h"
 
 #include "scrapers/movie/MovieScraper.h"
-
 #include "log/Log.h"
 
 MovieSearch::MovieSearch(QWidget* parent) : QDialog(parent), ui(new Ui::MovieSearch)
@@ -43,7 +42,7 @@ int MovieSearch::execWithSearch(QString searchString, ImdbId id, TmdbId tmdbId)
     ui->buttonScrape->setEnabled(false);
 
     QSize newSize;
-    newSize.setHeight(parentWidget()->size().height() - 200);
+    newSize.setHeight(parentWidget()->size().height() * 40 / 100);
     newSize.setWidth(qMin(900, parentWidget()->size().width() - 100));
     resize(newSize);
 

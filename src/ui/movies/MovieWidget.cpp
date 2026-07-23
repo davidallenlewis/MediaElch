@@ -27,6 +27,7 @@
 #include <QPainter>
 #include <QPixmapCache>
 #include <QScrollBar>
+#include <QShortcut>
 #include <QtCore/qmath.h>
 
 
@@ -211,6 +212,24 @@ MovieWidget::MovieWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieWid
     p.end();
     ui->buttonRevert->setIcon(QIcon(revert));
     ui->buttonRevert->setVisible(false);
+
+    // Cmd+Z: if a text field has focus, forward undo to it so normal typing-undo
+    // still works. Otherwise, if there are unsaved changes, revert the movie.
+    auto* revertShortcut = new QShortcut(QKeySequence::Undo, this);
+    connect(revertShortcut, &QShortcut::activated, this, [this]() {
+        auto* fw = QApplication::focusWidget();
+        if (auto* le = qobject_cast<QLineEdit*>(fw)) {
+            le->undo();
+            return;
+        }
+        if (auto* te = qobject_cast<QPlainTextEdit*>(fw)) {
+            te->undo();
+            return;
+        }
+        if (ui->buttonRevert->isVisible()) {
+            onRevertChanges();
+        }
+    });
 }
 
 MovieWidget::~MovieWidget()
@@ -549,7 +568,7 @@ void MovieWidget::updateMovieInfo()
 
     ui->imdbId->setText(m_movie->imdbId().toString());
     ui->tmdbId->setText(m_movie->tmdbId().toString());
-    ui->btnImdb->setEnabled(m_movie->imdbId().isValid());
+    ui->btnImdb->setEnabled(!m_movie->imdbId().toString().isEmpty());
     ui->btnTmdb->setEnabled(m_movie->tmdbId().isValid());
     ui->name->setText(m_movie->title());
     ui->movieName->setText(m_movie->title());
@@ -1100,7 +1119,7 @@ void MovieWidget::onImdbIdChange(QString text)
         return;
     }
     m_movie->setImdbId(ImdbId(text));
-    ui->btnImdb->setEnabled(m_movie->imdbId().isValid());
+    ui->btnImdb->setEnabled(!text.trimmed().isEmpty());
     ui->buttonRevert->setVisible(true);
 }
 
@@ -1116,11 +1135,14 @@ void MovieWidget::onTmdbIdChange(QString text)
 
 void MovieWidget::onImdbIdOpen()
 {
-    if (m_movie == nullptr || !m_movie->imdbId().isValid()) {
+    if (m_movie == nullptr || m_movie->imdbId().toString().isEmpty()) {
         return;
     }
-    QString url = QStringLiteral("https://www.imdb.com/title/%1/").arg(m_movie->imdbId().toString());
-    QDesktopServices::openUrl(QUrl(url, QUrl::StrictMode));
+    const QString stored = m_movie->imdbId().toString();
+    const QUrl url = stored.startsWith("http://") || stored.startsWith("https://")
+        ? QUrl(stored, QUrl::StrictMode)
+        : QUrl(QStringLiteral("https://www.imdb.com/title/%1/").arg(stored), QUrl::StrictMode);
+    QDesktopServices::openUrl(url);
 }
 
 void MovieWidget::onTmdbIdOpen()
