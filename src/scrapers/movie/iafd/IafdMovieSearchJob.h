@@ -20,9 +20,11 @@ public:
 
 private:
     static QList<MovieSearchJob::Result> parseSearchStartpage(const QString& html);
+    void runSearch(const QString& query);
 
 private:
     IafdMovieApi& m_api;
+    bool m_retried = false;
 };
 
 } // namespace scraper

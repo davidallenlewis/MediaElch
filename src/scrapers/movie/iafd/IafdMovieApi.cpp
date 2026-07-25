@@ -166,7 +166,7 @@ QUrl IafdMovieApi::makeStartpageSearchUrl(const QString& searchStr)
     QUrl url(QStringLiteral("https://www.startpage.com/search"));
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("q"),
-        QStringLiteral("www.iafd.com ") + searchStr);
+        QStringLiteral("www.iafd.com ") + searchStr.toLower());
     q.addQueryItem(QStringLiteral("cat"), QStringLiteral("web"));
     q.addQueryItem(QStringLiteral("safe"), QStringLiteral("off"));
     url.setQuery(q);

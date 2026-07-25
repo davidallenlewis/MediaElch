@@ -40,11 +40,28 @@ void IafdMovieSearchJob::doStart()
         return;
     }
 
+    runSearch(query);
+}
+
+void IafdMovieSearchJob::runSearch(const QString& query)
+{
     // Single Startpage query: "iafd.com TITLE"
     // The domain path acts as an implicit keyword filter — no site: operator needed.
     m_api.searchForMovie(query, [this, query](QString data, ScraperError error) {
         if (!error.hasError()) {
             m_results = parseSearchStartpage(data);
+        }
+
+        if (m_results.isEmpty()) {
+            qCDebug(generic) << "[IAFD] Startpage returned 0 results for query:" << query;
+            qCDebug(generic) << "[IAFD] Startpage raw response (first 2000 chars):"
+                             << data.left(2000);
+        } else {
+            qCDebug(generic) << "[IAFD] Startpage parsed" << m_results.size()
+                             << "results for query:" << query;
+            for (const auto& r : asConst(m_results)) {
+                qCDebug(generic) << "[IAFD]  -" << r.title << "|" << r.identifier.str();
+            }
         }
 
         // Stable-sort by relevance: exact title match first, then prefix, then
@@ -61,6 +78,19 @@ void IafdMovieSearchJob::doStart()
             [&score](const MovieSearchJob::Result& a, const MovieSearchJob::Result& b) {
                 return score(a) > score(b);
             });
+
+        // If no result matches the query at all and we haven't retried yet,
+        // fire one more request — Startpage/Google returns non-deterministic
+        // result sets for stateless requests, so a second attempt often hits
+        // a different backend with the correct results.
+        const bool anyMatch = !m_results.isEmpty() && score(m_results.first()) > 0;
+        if (!anyMatch && !m_retried) {
+            m_retried = true;
+            qCDebug(generic) << "[IAFD] No matching result found, retrying search for:" << query;
+            m_results.clear();
+            runSearch(query);
+            return;
+        }
 
         qCDebug(generic) << "[IAFD] Search complete:" << m_results.size() << "results";
         emitFinished();
