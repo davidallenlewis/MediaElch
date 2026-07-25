@@ -254,7 +254,8 @@ bool Filter::accepts(Movie* movie)
                || (!m_hasInfo && movie->imdbId().toString().isEmpty());
     }
     if (isInfo(MovieFilters::TmdbId)) {
-        return (m_hasInfo && movie->tmdbId() == TmdbId(m_shortText)) || (!m_hasInfo && !movie->tmdbId().isValid());
+        return (m_hasInfo && movie->tmdbId() == TmdbId(m_shortText))
+               || (!m_hasInfo && movie->tmdbId().toString().isEmpty() && movie->imdbId().toString().isEmpty());
     }
     if (isInfo(MovieFilters::WikidataId)) {
         return (m_hasInfo && movie->wikidataId() == WikidataId(m_shortText))
