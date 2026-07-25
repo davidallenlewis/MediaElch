@@ -131,9 +131,7 @@ void IafdMovieApi::sendGetRequest(const QUrl& url, const QString& referer, IafdM
                                << reply->url() << "(HTTP" << httpStatus << ")";
             ScraperError cfError;
             cfError.error = ScraperError::Type::ApiError;
-            cfError.message = QObject::tr(
-                "IAFD is protected by Cloudflare and the request was blocked. "
-                "Try again later or from a different network.");
+            cfError.message = QObject::tr("Request blocked by Cloudflare.");
             cfError.technical =
                 QStringLiteral("HTTP %1 from iafd.com (cf-ray: %2)")
                     .arg(httpStatus)
