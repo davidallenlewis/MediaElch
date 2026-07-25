@@ -78,6 +78,7 @@ MovieFilesWidget::MovieFilesWidget(QWidget* parent) : QWidget(parent), ui(new Ui
     }
 
     auto* actionMultiScrape = new QAction(tr("Load Information"), this);
+    auto* actionReloadFromNfo = new QAction(tr("Reload from NFO"), this);
     auto* actionMarkAsWatched = new QAction(tr("Mark as watched"), this);
     auto* actionMarkAsUnwatched = new QAction(tr("Mark as unwatched"), this);
     auto* actionLoadStreamDetails = new QAction(tr("Load Stream Details"), this);
@@ -89,6 +90,7 @@ MovieFilesWidget::MovieFilesWidget(QWidget* parent) : QWidget(parent), ui(new Ui
 
     m_contextMenu = new QMenu(ui->files);
     m_contextMenu->addAction(actionMultiScrape);
+    m_contextMenu->addAction(actionReloadFromNfo);
     m_contextMenu->addSeparator();
     m_contextMenu->addAction(actionMarkAsWatched);
     m_contextMenu->addAction(actionMarkAsUnwatched);
@@ -107,6 +109,7 @@ MovieFilesWidget::MovieFilesWidget(QWidget* parent) : QWidget(parent), ui(new Ui
 
     // clang-format off
     connect(actionMultiScrape,       &QAction::triggered, this, &MovieFilesWidget::multiScrape);
+    connect(actionReloadFromNfo,     &QAction::triggered, this, &MovieFilesWidget::reloadFromNfo);
     connect(actionMarkAsWatched,     &QAction::triggered, this, &MovieFilesWidget::markAsWatched);
     connect(actionMarkAsUnwatched,   &QAction::triggered, this, &MovieFilesWidget::markAsUnwatched);
     connect(actionLoadStreamDetails, &QAction::triggered, this, &MovieFilesWidget::loadStreamDetails);
@@ -293,6 +296,20 @@ void MovieFilesWidget::openFolder()
     }
     QFileInfo fi(movie->files().at(0).toString());
     QDesktopServices::openUrl(QUrl::fromLocalFile(fi.absolutePath()));
+}
+
+void MovieFilesWidget::reloadFromNfo()
+{
+    m_contextMenu->close();
+    for (const QModelIndex& index : ui->files->selectionModel()->selectedRows(0)) {
+        const int row = index.model()->data(index, Qt::UserRole).toInt();
+        Movie* movie = Manager::instance()->movieModel()->movie(row);
+        movie->controller()->loadData(Manager::instance()->mediaCenterInterface(), true, true);
+        movie->setChanged(false);
+    }
+    if (!ui->files->selectionModel()->selectedRows(0).isEmpty()) {
+        movieSelectedEmitter();
+    }
 }
 
 void MovieFilesWidget::openNfoFile()

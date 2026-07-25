@@ -246,10 +246,25 @@ void IafdMovieScrapeJob::parseAndAssignInfos(const QString& html)
                 QStringList cells;
                 QRegularExpressionMatchIterator cellIt = cellRx.globalMatch(rowHtml);
                 while (cellIt.hasNext()) {
-                    const QString cellText =
+                    QString cellText =
                         QTextDocumentFragment::fromHtml(cellIt.next().captured(1))
                             .toPlainText()
                             .trimmed();
+                    // IAFD always places <br><br> immediately before the
+                    // "Released as a webscene:" line, which Qt renders as a
+                    // blank line.  Collapse the double newline to a single one
+                    // and add a trailing newline so the webscene info is
+                    // visually separated from any content that follows.
+                    if (cellText.contains(QLatin1String("Released as a webscene:"),
+                            Qt::CaseInsensitive)) {
+                        static const QRegularExpression dblNewlineWebscene(
+                            QStringLiteral("\\n\\n(Released as a webscene:)"),
+                            QRegularExpression::CaseInsensitiveOption);
+                        cellText.replace(dblNewlineWebscene, QStringLiteral("\n\\1"));
+                        if (!cellText.endsWith(QLatin1Char('\n'))) {
+                            cellText += QLatin1Char('\n');
+                        }
+                    }
                     if (!cellText.isEmpty()) {
                         cells << cellText;
                     }

@@ -77,6 +77,7 @@ private slots:
     void updateStatusLabel();
     void playMovie(QModelIndex idx);
     void openNfoFile();
+    void reloadFromNfo();
 
 private:
     Ui::MovieFilesWidget* ui;
