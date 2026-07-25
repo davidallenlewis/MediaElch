@@ -6,7 +6,9 @@
 
 #include <QNetworkReply>
 #include <QObject>
+#include <QRegularExpression>
 #include <QTimer>
+#include <QUrlQuery>
 
 namespace mediaelch {
 namespace scraper {
@@ -154,6 +156,19 @@ void IafdMovieApi::searchForMovie(const QString& query, IafdMovieApi::ApiCallbac
     sendGetRequest(makeStartpageSearchUrl(query), {}, std::move(callback));
 }
 
+void IafdMovieApi::searchForMovieNoCache(const QString& query, IafdMovieApi::ApiCallback callback)
+{
+    QUrl url = makeStartpageSearchUrl(query);
+    QNetworkRequest request = mediaelch::network::requestWithDefaults(url);
+    m_network.cache().removeElement(request);
+    sendGetRequest(url, {}, std::move(callback));
+}
+
+void IafdMovieApi::searchForMovieDDG(const QString& query, IafdMovieApi::ApiCallback callback)
+{
+    sendGetRequest(makeDDGSearchUrl(query), {}, std::move(callback));
+}
+
 void IafdMovieApi::loadMovie(const QString& url, IafdMovieApi::ApiCallback callback)
 {
     sendGetRequest(makeMovieUrl(url), {}, std::move(callback));
@@ -163,12 +178,39 @@ QUrl IafdMovieApi::makeStartpageSearchUrl(const QString& searchStr)
 {
     // Startpage (Google proxy) — keyword search using domain as implicit filter.
     // Using bare "iafd.com TITLE" (without /title.rme or site:) gives better coverage.
+    //
+    // Lowercase improves matching because IAFD titles are indexed from lowercase URL slugs.
+    // Strip all non-alphanumeric, non-space characters — punctuation such as "?" and
+    // apostrophes (e.g. "Who's") encode poorly and break Startpage token matching.
+    // "Who's Your Daddy? 10" → "whos your daddy 10" matches the slug cleanly.
+    QString cleaned = searchStr.toLower();
+    static const QRegularExpression punctRx(QStringLiteral("[^\\w\\s]"));
+    cleaned.remove(punctRx);
+    cleaned = cleaned.simplified();
+
     QUrl url(QStringLiteral("https://www.startpage.com/search"));
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("q"),
-        QStringLiteral("www.iafd.com ") + searchStr.toLower());
+        QStringLiteral("www.iafd.com ") + cleaned);
     q.addQueryItem(QStringLiteral("cat"), QStringLiteral("web"));
     q.addQueryItem(QStringLiteral("safe"), QStringLiteral("off"));
+    url.setQuery(q);
+    return url;
+}
+
+QUrl IafdMovieApi::makeDDGSearchUrl(const QString& searchStr)
+{
+    // DuckDuckGo Lite — minimal plain-HTML endpoint, no JavaScript required.
+    // Much more bot-friendly than html.duckduckgo.com.
+    QString cleaned = searchStr.toLower();
+    static const QRegularExpression punctRx2(QStringLiteral("[^\\w\\s]"));
+    cleaned.remove(punctRx2);
+    cleaned = cleaned.simplified();
+
+    QUrl url(QStringLiteral("https://lite.duckduckgo.com/lite/"));
+    QUrlQuery q;
+    q.addQueryItem(QStringLiteral("q"),
+        QStringLiteral("site:iafd.com/title.rme ") + cleaned);
     url.setQuery(q);
     return url;
 }

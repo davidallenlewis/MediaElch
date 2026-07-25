@@ -70,6 +70,11 @@ QString WebsiteCache::getElement(const QNetworkRequest& request)
     return m_cache[h].data;
 }
 
+void WebsiteCache::removeElement(const QNetworkRequest& request)
+{
+    m_cache.remove(hashFor(request));
+}
+
 void WebsiteCache::clearOldCacheEntries()
 {
     auto it = m_cache.begin();

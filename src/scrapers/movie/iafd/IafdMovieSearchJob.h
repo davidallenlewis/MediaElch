@@ -20,7 +20,9 @@ public:
 
 private:
     static QList<MovieSearchJob::Result> parseSearchStartpage(const QString& html);
+    static QList<MovieSearchJob::Result> parseSearchDDG(const QString& html);
     void runSearch(const QString& query);
+    void runDDGFallback(const QString& query);
 
 private:
     IafdMovieApi& m_api;

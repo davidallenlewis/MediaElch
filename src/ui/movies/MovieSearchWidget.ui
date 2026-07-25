@@ -79,6 +79,12 @@ If you want to search by an TMDb id please prefix it with &quot;id&quot;.</strin
        <property name="text">
         <string/>
        </property>
+       <property name="textFormat">
+        <enum>Qt::TextFormat::RichText</enum>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>
@@ -87,7 +93,10 @@ If you want to search by an TMDb id please prefix it with &quot;id&quot;.</strin
         <string notr="true"/>
        </property>
        <property name="textFormat">
-        <enum>Qt::TextFormat::PlainText</enum>
+        <enum>Qt::TextFormat::RichText</enum>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

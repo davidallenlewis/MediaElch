@@ -1,6 +1,7 @@
 #include "scrapers/movie/iafd/IafdMovieSearchJob.h"
 
 #include "log/Log.h"
+#include "scrapers/ScraperError.h"
 #include "scrapers/movie/MovieIdentifier.h"
 
 #include <QObject>
@@ -52,15 +53,29 @@ void IafdMovieSearchJob::runSearch(const QString& query)
             m_results = parseSearchStartpage(data);
         }
 
-        if (m_results.isEmpty()) {
-            qCDebug(generic) << "[IAFD] Startpage returned 0 results for query:" << query;
-            qCDebug(generic) << "[IAFD] Startpage raw response (first 2000 chars):"
-                             << data.left(2000);
-        } else {
-            qCDebug(generic) << "[IAFD] Startpage parsed" << m_results.size()
+        // Startpage selectively server-renders results. When the raw response
+        // contains no title.rme links it's a JS-only shell — fall back to DDG HTML.
+        if (m_results.isEmpty() && !m_retried) {
+            int titleRmeCount = 0;
+            int pos = 0;
+            while ((pos = data.indexOf(QLatin1String("title.rme"), pos, Qt::CaseInsensitive)) != -1) {
+                ++titleRmeCount;
+                ++pos;
+            }
+            qCInfo(generic) << "[IAFD] Startpage returned 0 results for query:" << query
+                             << "| title.rme occurrences:" << titleRmeCount
+                             << "| response length:" << data.size();
+            if (titleRmeCount == 0) {
+                qCInfo(generic) << "[IAFD] Startpage returned JS-only shell — falling back to DDG HTML";
+                m_retried = true;
+                runDDGFallback(query);
+                return;
+            }
+        } else if (!m_results.isEmpty()) {
+            qCInfo(generic) << "[IAFD] Startpage parsed" << m_results.size()
                              << "results for query:" << query;
             for (const auto& r : asConst(m_results)) {
-                qCDebug(generic) << "[IAFD]  -" << r.title << "|" << r.identifier.str();
+                qCInfo(generic) << "[IAFD]  -" << r.title << "|" << r.identifier.str();
             }
         }
 
@@ -79,22 +94,143 @@ void IafdMovieSearchJob::runSearch(const QString& query)
                 return score(a) > score(b);
             });
 
-        // If no result matches the query at all and we haven't retried yet,
-        // fire one more request — Startpage/Google returns non-deterministic
-        // result sets for stateless requests, so a second attempt often hits
-        // a different backend with the correct results.
-        const bool anyMatch = !m_results.isEmpty() && score(m_results.first()) > 0;
+        // Only retry (via DDG) when we got zero results — if any results came
+        // back from Startpage, return them even if none score against the query.
+        const bool anyMatch = !m_results.isEmpty();
         if (!anyMatch && !m_retried) {
             m_retried = true;
-            qCDebug(generic) << "[IAFD] No matching result found, retrying search for:" << query;
+            qCInfo(generic) << "[IAFD] Startpage returned results but none matched — retrying via DDG for:" << query;
             m_results.clear();
-            runSearch(query);
+            runDDGFallback(query);
             return;
         }
 
         qCDebug(generic) << "[IAFD] Search complete:" << m_results.size() << "results";
         emitFinished();
     });
+}
+
+void IafdMovieSearchJob::runDDGFallback(const QString& query)
+{
+    qCInfo(generic) << "[IAFD] Trying DDG HTML fallback for:" << query;
+    m_api.searchForMovieDDG(query, [this, query](QString data, ScraperError error) {
+        if (!error.hasError()) {
+            m_results = parseSearchDDG(data);
+        }
+        qCInfo(generic) << "[IAFD] DDG returned" << m_results.size() << "results for query:" << query;
+        int ddgTitleRme = 0;
+        int pos = 0;
+        while ((pos = data.indexOf(QLatin1String("title.rme"), pos, Qt::CaseInsensitive)) != -1) {
+            ++ddgTitleRme;
+            ++pos;
+        }
+        qCInfo(generic) << "[IAFD] DDG response 'title.rme' occurrences:" << ddgTitleRme
+                         << "| response length:" << data.size();
+        if (ddgTitleRme > 0 && m_results.isEmpty()) {
+            // Links are present but regex didn't match — log context around first hit
+            const int hitPos = data.indexOf(QLatin1String("title.rme"), 0, Qt::CaseInsensitive);
+            const int start = qMax(0, hitPos - 200);
+            const int len = qMin(500, data.size() - start);
+            qCInfo(generic) << "[IAFD] DDG context around first title.rme:" << data.mid(start, len);
+        }
+        if (m_results.isEmpty()) {
+            const QString iafdUrl =
+                QStringLiteral("https://www.iafd.com/results.asp?searchtype=comprehensive&searchstring=")
+                + QString::fromUtf8(QUrl::toPercentEncoding(query))
+                      .replace(QLatin1Char(' '), QLatin1Char('+'));
+            ScraperError hint;
+            hint.error = ScraperError::Type::ApiError;
+            hint.message =
+                tr("No results \u2014 Try modifying your search or <a href=\"%1\">Search IAFD</a> and paste the URL")
+                    .arg(iafdUrl);
+            setScraperError(hint);
+        }
+        for (const auto& r : asConst(m_results)) {
+            qCInfo(generic) << "[IAFD]  -" << r.title << "|" << r.identifier.str();
+        }
+        const QString queryLower = query.toLower();
+        auto score = [&queryLower](const MovieSearchJob::Result& r) {
+            const QString t = r.title.toLower();
+            if (t == queryLower) return 3;
+            if (t.startsWith(queryLower)) return 2;
+            if (t.contains(queryLower)) return 1;
+            return 0;
+        };
+        std::stable_sort(m_results.begin(), m_results.end(),
+            [&score](const MovieSearchJob::Result& a, const MovieSearchJob::Result& b) {
+                return score(a) > score(b);
+            });
+        qCDebug(generic) << "[IAFD] Search complete:" << m_results.size() << "results";
+        emitFinished();
+    });
+}
+
+QList<MovieSearchJob::Result> IafdMovieSearchJob::parseSearchDDG(const QString& html)
+{
+    QList<MovieSearchJob::Result> results;
+    // DDG Lite wraps result hrefs in redirect URLs of the form:
+    //   //duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.iafd.com%2Ftitle.rme%2F...
+    // Match those redirect links and URL-decode the uddg parameter.
+    // Also match any direct iafd.com/title.rme links as a fallback.
+    static const QRegularExpression redirectRx(
+        R"re(href="[^"]*[?&]uddg=([^&"]+)[^"]*"[^>]*>(.*?)</a>)re",
+        QRegularExpression::DotMatchesEverythingOption);
+    static const QRegularExpression directRx(
+        R"re(href="(https?://(?:www\.)?iafd\.com/title\.rme/[^"]+)"[^>]*>(.*?)</a>)re",
+        QRegularExpression::DotMatchesEverythingOption);
+    static const QRegularExpression tagRx(R"re(<[^>]+>)re");
+
+    QSet<QString> seen;
+
+    auto addResult = [&](const QString& url, const QString& rawTitle) {
+        if (!url.contains(QStringLiteral("iafd.com/title.rme"), Qt::CaseInsensitive)) {
+            return;
+        }
+        if (seen.contains(url)) {
+            return;
+        }
+        seen.insert(url);
+
+        QString title = rawTitle;
+        title.remove(tagRx);
+        title = QTextDocumentFragment::fromHtml(title).toPlainText().trimmed();
+        const int suffixIdx = title.indexOf(QStringLiteral(" - iafd.com"), 0, Qt::CaseInsensitive);
+        if (suffixIdx > 0) {
+            title = title.left(suffixIdx).trimmed();
+        }
+        if (title.isEmpty()) {
+            return;
+        }
+        QStringList words = title.split(QLatin1Char(' '));
+        for (QString& word : words) {
+            if (!word.isEmpty()) {
+                word[0] = word[0].toUpper();
+            }
+        }
+        title = words.join(QLatin1Char(' '));
+
+        MovieSearchJob::Result result;
+        result.identifier = MovieIdentifier(url);
+        result.title = title;
+        results << result;
+    };
+
+    // Redirect links
+    QRegularExpressionMatchIterator it = redirectRx.globalMatch(html);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch m = it.next();
+        const QString url = QUrl::fromPercentEncoding(m.captured(1).toUtf8());
+        addResult(url, m.captured(2));
+    }
+
+    // Direct links (fallback, in case DDG Lite ever uses them)
+    it = directRx.globalMatch(html);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch m = it.next();
+        addResult(m.captured(1), m.captured(2));
+    }
+
+    return results;
 }
 
 QList<MovieSearchJob::Result> IafdMovieSearchJob::parseSearchStartpage(const QString& html)

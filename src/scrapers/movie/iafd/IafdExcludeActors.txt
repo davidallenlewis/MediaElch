@@ -182,6 +182,7 @@ CunTre
 Cuntre Pipes
 Cyrus King
 D Snoop
+D. K.
 D. Snoop
 D.J.X.
 Dale DaBone
@@ -375,6 +376,7 @@ J.J. Michaels
 J.P.X.
 J.R. Langdon
 Jack Baker
+Jack Fountain
 Jack Hammer
 Jack Johnson
 Jack Lawrence
@@ -468,6 +470,7 @@ John E. Depth
 John Espizedo
 John Holmes
 John Janeiro
+John Janiero
 John Leslie
 John Stagliano
 John Strong
@@ -557,6 +560,7 @@ L.T.
 Lance Hart
 Lance Heywood
 Lance Romance
+Lance Strong
 Lauro Giotto
 Lee Bang
 Lee Bangs
@@ -722,6 +726,7 @@ Omar Williams
 Otto Bauer
 Owen Gray
 Owen Grey
+P. K.
 Panama Jack
 Panama Jak
 Parker Johnson
@@ -942,6 +947,7 @@ Tony Martinez
 Tony Martino
 Tony Michaels
 Tony Montana
+Tony Pounds
 Tony Profane
 Tony Rubino
 Tony Sexton
@@ -960,8 +966,6 @@ Trevor Zen
 Tricky Dixxon
 Tristan Seagal
 Tristan Segal
-Lance Strong
-Jack Fountain
 TT Boy
 Ty Endicott
 Tyce Bune
@@ -983,6 +987,7 @@ Vincent Vega
 Vinnie Vicious
 Vinny Burgos
 Vinny Visious
+Viper
 Vitor Gaucho
 Vitor Lion
 Voodoo
@@ -991,6 +996,7 @@ Warren Piece
 Warren Piece
 Wayne Summers
 Wein Lewis
+Wesley
 Wesley Nike
 Wesley Pipes
 Wesley Woods
@@ -1007,6 +1013,7 @@ Xander Corvus
 Yves Baillat
 Yves Le Prince
 Zachary Highland
+Zachary Lee Miles
 Zachary Wild
 Zack Miles
 Zak Spears

@@ -26,6 +26,7 @@ public:
     void addElement(const QNetworkRequest& request, QString data);
     QString getElement(const QNetworkRequest& request);
     bool hasValidElement(const QNetworkRequest& request);
+    void removeElement(const QNetworkRequest& request);
 
     void clear();
 

@@ -32,11 +32,15 @@ public:
 
     /// \brief Search IAFD via Startpage using keyword query.
     void searchForMovie(const QString& query, ApiCallback callback);
+    void searchForMovieNoCache(const QString& query, ApiCallback callback);
+    /// \brief Search IAFD via DuckDuckGo HTML (no-JS fallback).
+    void searchForMovieDDG(const QString& query, ApiCallback callback);
 
     /// \brief Load the IAFD movie page at \p url (full URL used as identifier).
     void loadMovie(const QString& url, ApiCallback callback);
 
     static QUrl makeStartpageSearchUrl(const QString& searchStr);
+    static QUrl makeDDGSearchUrl(const QString& searchStr);
     static QUrl makeMovieUrl(const QString& id);
 
 private:

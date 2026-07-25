@@ -12,6 +12,9 @@
 #include "utils/Meta.h"
 
 #include "log/Log.h"
+#include "scrapers/movie/iafd/IafdMovie.h"
+
+#include <QUrl>
 
 MovieSearchWidget::MovieSearchWidget(QWidget* parent) : QWidget(parent), ui(new Ui::MovieSearchWidget)
 {
@@ -241,7 +244,21 @@ void MovieSearchWidget::onShowResults(mediaelch::scraper::MovieSearchJob* search
     }
 
     qCDebug(generic) << "[MovieSearch] Count: " << searchJob->results().size();
-    showSuccess(tr("Found %n results", "", qsizetype_to_int(searchJob->results().size())));
+    {
+        const int count = qsizetype_to_int(searchJob->results().size());
+        QString successMsg = (count == 1 ? tr("1 Result \u2013 Select a result or")
+                                         : tr("%n Results \u2013 Select a result or", "", count));
+        if (m_currentScraper != nullptr
+            && m_currentScraper->meta().identifier == mediaelch::scraper::IafdMovie::ID) {
+            const QString iafdUrl =
+                QStringLiteral(
+                    "https://www.iafd.com/results.asp?searchtype=comprehensive&searchstring=")
+                + QString::fromUtf8(QUrl::toPercentEncoding(searchJob->config().query.trimmed()));
+            successMsg += tr(" <a href=\"%1\">Search IAFD</a> and paste the URL")
+                              .arg(iafdUrl);
+        }
+        showSuccess(successMsg);
+    }
 
     for (const MovieSearchJob::Result& result : asConst(searchJob->results())) {
         const QString displayName = result.released.isNull()
